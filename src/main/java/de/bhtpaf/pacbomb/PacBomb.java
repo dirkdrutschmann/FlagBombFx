@@ -14,13 +14,16 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 
-public class SnakeTest extends Application  {
+public class PacBomb extends Application  {
     // variable
     static int speed = 10;
-    static int bombs = -1;
+    static int bombs = 10;
     static int foodcolor = 0;
     static int width = 500;
     static int height = 500;
@@ -32,11 +35,18 @@ public class SnakeTest extends Application  {
     static boolean gameOver = false;
     static Random rand = new Random();
     //Creating an image
-    static Image image = new Image(SnakeTest.class.getResourceAsStream("bomberman.gif"));
+    static Image pacMan = new Image(PacBomb.class.getResourceAsStream("bomberman.gif"));
+    static Image[] bombImages = new Image[] {new Image(PacBomb.class.getResourceAsStream("bomb1.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb2.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb3.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb4.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb5.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb6.gif"))};
     //Upper Left of Image / Image is set 50x50
     static int PacBombX = width / 2 ;
     static int PacBombY = height /2 ;
-
+    static boolean bombIt = false;
+    static List<Bomb> bombList = new ArrayList<>();
     public enum Dir {
         left, right, up, down
     }
@@ -87,6 +97,9 @@ public class SnakeTest extends Application  {
                 }
                 if (key.getCode() == KeyCode.RIGHT) {
                     direction = Dir.right;
+                }
+                if (key.getCode() == KeyCode.SPACE){
+                    bombIt = true;
                 }
             });
 
@@ -182,11 +195,33 @@ public class SnakeTest extends Application  {
         gc.setFill(cc);
         gc.fillOval(foodX , foodY , cornersize, cornersize);
 
+        gc.drawImage(pacMan, PacBombX, PacBombY, 50, 50);
+
+        Iterator<Bomb> iter = bombList.iterator();
+
+        while (iter.hasNext()) {
+            Bomb b = iter.next();
+
+            if (b.state == 60) {
+                iter.remove();
+                return;
+            }else{
+                gc.drawImage(bombImages[b.state/10], b.x, b.y, 50, 50);
+                b.state++;
+            }
+        }
 
 
         //Setting the image view
-        gc.drawImage(image, PacBombX, PacBombY, 50, 50);
 
+
+        if (bombIt == true){
+            if(bombs>0){
+            bombs--;
+            bombList.add(new Bomb(PacBombX,PacBombY));
+            }
+            bombIt = false;
+        }
     }
 
     // food
@@ -201,6 +236,19 @@ public class SnakeTest extends Application  {
             break;
 
         }
+    }
+
+
+    public static class Bomb {
+        int x;
+        int y;
+        int state = 0;
+
+        public Bomb(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
     }
 
     public static void main(String[] args) {
