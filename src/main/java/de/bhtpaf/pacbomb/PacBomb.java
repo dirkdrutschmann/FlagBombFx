@@ -51,7 +51,7 @@ public class PacBomb extends Application  {
     static MediaPlayer boomPlayer = new MediaPlayer(soundBoom);
     static MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
     static MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
-    static BomberMan bomberMan = new BomberMan(bomberManSize);
+    static BomberMan bomberMan = new BomberMan(height);
 
     //Upper Left of Image / Image is set 50x50
 
@@ -65,7 +65,6 @@ public class PacBomb extends Application  {
 
     public void start(Stage primaryStage)  {
         try {
-            newFood();
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
             backgroundPlayer.play();
@@ -143,26 +142,25 @@ public class PacBomb extends Application  {
         switch (direction) {
             case up:
                 bomberMan.addY(-step);
-                if (bomberMan.coord.y < 0) {
+                if (bomberMan.corner.downRight.y < 0) {
                     gameOver = true;
                 }
                 break;
             case down:
                 bomberMan.addY(step);
-
-                if (bomberMan.corner.downRight.y > height) {
+                if (bomberMan.corner.upperRight.y > height) {
                     gameOver = true;
                 }
                 break;
             case left:
                 bomberMan.addX(-step);
-                if (bomberMan.coord.x < 0) {
+                if (bomberMan.corner.downLeft.x < 0) {
                     gameOver = true;
                 }
                 break;
             case right:
                 bomberMan.addX(step);
-                if (bomberMan.corner.downRight.x > width) {
+                if (bomberMan.corner.upperRight.x > width) {
                     gameOver = true;
                 }
                 break;
@@ -171,17 +169,11 @@ public class PacBomb extends Application  {
         // eat food
         if(food.corner.compare(bomberMan.corner) ){
 
-             System.out.println("Food: OL X: " + food.corner.upperLeft.x + " Y: " + food.corner.upperLeft.y);
-            System.out.println("Food: OR X: " + food.corner.upperRight.x + " Y: " + food.corner.upperRight.y);
-            System.out.println("Food: UL X: " + food.corner.downLeft.x + " Y: " + food.corner.downLeft.y);
-            System.out.println("Food: UR X: " + food.corner.downRight.x + " Y: " + food.corner.downRight.y);
-            System.out.println("bomber: OL X: " + bomberMan.corner.upperLeft.x + " Y: " + bomberMan.corner.upperLeft.y);
-            System.out.println("bomber: OR X: " + bomberMan.corner.upperRight.x + " Y: " + bomberMan.corner.upperRight.y);
-            System.out.println("bomber: UL X: " + bomberMan.corner.downLeft.x + " Y: " + bomberMan.corner.downLeft.y);
-            System.out.println("bomber: UR X: " + bomberMan.corner.downRight.x + " Y: " + bomberMan.corner.downRight.y);
+
 
 
             food = new Food(width, height, foodSize);
+            collectPlayer.stop();
             collectPlayer.play();
             bombs++;
             speed++;
@@ -219,12 +211,12 @@ public class PacBomb extends Application  {
                 cc = Color.ORANGE;
                 break;
         }
-        gc.setFill(Color.RED);
-        gc.fillRect(food.coord.x , food.coord.y, foodSize, foodSize);
+        //gc.setFill(Color.RED);
+        //gc.fillRect(food.coord.x , food.coord.y, foodSize, foodSize);
         gc.setFill(cc);
         gc.fillOval(food.coord.x , food.coord.y , foodSize, foodSize);
-        gc.setFill(Color.RED);
-        gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
+       // gc.setFill(Color.RED);
+        //gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
         gc.drawImage(pacMan, bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
 
         Iterator<Bomb> iter = bombList.iterator();
@@ -258,10 +250,7 @@ public class PacBomb extends Application  {
         }
     }
 
-    // food
-    public static void newFood() {
 
-    }
 
     public static class Food{
         Coord coord;
@@ -315,15 +304,15 @@ public class PacBomb extends Application  {
 
 
         public Corner(Coord coord, int width){
-            this.upperLeft = coord;
-            this.downLeft = new Coord (coord.x, coord.y + width);
-            this.upperRight = new Coord (coord.x + width, coord.y);
-            this.downRight = new Coord (coord.x + width, coord.y + width);
+            this.downLeft = coord;
+            this.upperLeft = new Coord (coord.x, coord.y + width);
+            this.downRight = new Coord (coord.x + width, coord.y);
+            this.upperRight = new Coord (coord.x + width, coord.y + width);
         }
 
         public boolean compare(Corner corner){
 
-                return (upperLeft.x <= corner.downRight.x) && (corner.upperLeft.x <= downRight.x) && (upperLeft.y <= downRight.y) && (corner.upperLeft.y <= downRight.y);
+                return (downLeft.x <= corner.upperRight.x) && (corner.downLeft.x <= upperRight.x) && (downLeft.y <= corner.upperRight.y) && (corner.downLeft.y <= upperRight.y);
 
         }
 
