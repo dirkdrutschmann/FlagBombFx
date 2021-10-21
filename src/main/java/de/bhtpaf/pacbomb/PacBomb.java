@@ -47,16 +47,15 @@ public class PacBomb extends Application  {
     static Media soundCollect = new Media(PacBomb.class.getResource("collect.wav").toString());
     static Media backgroundMusic = new Media(PacBomb.class.getResource("sound.wav").toString());
     static Media gameOverMusic = new Media(PacBomb.class.getResource("gameover.wav").toString());
+    static Media errorMusic = new Media(PacBomb.class.getResource("empty.wav").toString());
     static MediaPlayer backgroundPlayer = new MediaPlayer(backgroundMusic);
-    static MediaPlayer boomPlayer = new MediaPlayer(soundBoom);
-    static MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
-    static MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
     static BomberMan bomberMan = new BomberMan(height);
-
+    static MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
     //Upper Left of Image / Image is set 50x50
 
     static boolean bombIt = false;
-    static List<Bomb> bombList = new ArrayList<>();
+    static List<Bomb> bombList = new ArrayList<Bomb>();
+    static List<Food> foodList = new ArrayList<Food>(){{add(new Food(width, height, foodSize));}};
     public enum Dir {
         left, right, up, down
     }
@@ -72,7 +71,6 @@ public class PacBomb extends Application  {
             Canvas c = new Canvas(width , height );
             GraphicsContext gc = c.getGraphicsContext2D();
             root.getChildren().add(c);
-
 
 
             new AnimationTimer() {
@@ -110,11 +108,10 @@ public class PacBomb extends Application  {
                     direction = Dir.right;
                 }
                 if (key.getCode() == KeyCode.SPACE){
-                    bombIt = true;
+                    addBomb();
                 }
 
             });
-
 
             //If you do not want to use css style, you can just delete the next line.
           //  scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
@@ -135,8 +132,6 @@ public class PacBomb extends Application  {
             gameOverPlayer.play();
             return;
         }
-
-
 
 
         switch (direction) {
@@ -166,21 +161,6 @@ public class PacBomb extends Application  {
                 break;
         }
 
-        // eat food
-        if(food.corner.compare(bomberMan.corner) ){
-
-
-
-
-            food = new Food(width, height, foodSize);
-            collectPlayer.stop();
-            collectPlayer.play();
-            bombs++;
-            speed++;
-        }
-
-
-
         // fill
         // background
         gc.setFill(Color.BLACK);
@@ -191,62 +171,63 @@ public class PacBomb extends Application  {
         gc.setFont(new Font("", 30));
         gc.fillText("BOMBS: " + bombs, 10, 30);
 
-        // random foodcolor
-        Color cc = Color.WHITE;
 
-        switch (food.color) {
-            case 0:
-                cc = Color.PURPLE;
-                break;
-            case 1:
-                cc = Color.LIGHTBLUE;
-                break;
-            case 2:
-                cc = Color.YELLOW;
-                break;
-            case 3:
-                cc = Color.PINK;
-                break;
-            case 4:
-                cc = Color.ORANGE;
-                break;
-        }
-        //gc.setFill(Color.RED);
-        //gc.fillRect(food.coord.x , food.coord.y, foodSize, foodSize);
-        gc.setFill(cc);
-        gc.fillOval(food.coord.x , food.coord.y , foodSize, foodSize);
        // gc.setFill(Color.RED);
         //gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
         gc.drawImage(pacMan, bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
 
-        Iterator<Bomb> iter = bombList.iterator();
+        Iterator<Bomb> iterBomb = bombList.iterator();
 
-        while (iter.hasNext()) {
-            Bomb b = iter.next();
+        while (iterBomb.hasNext()) {
+            Bomb b = iterBomb.next();
 
             if (b.state == 60) {
-                iter.remove();
+                iterBomb.remove();
                 return;
-            }else{
-                gc.drawImage(bombImages[b.state/10], b.coord.x, b.coord.y, bombSize, bombSize);
+            } else {
+                gc.drawImage(bombImages[b.state / 10], b.coord.x, b.coord.y, bombSize, bombSize);
                 b.state++;
             }
-            if(b.state == 52){
-                boomPlayer.stop();
+            if (b.state == 52) {
+                MediaPlayer boomPlayer = new MediaPlayer(soundBoom);
                 boomPlayer.play();
             }
         }
 
+        Iterator<Food> iterFood = foodList.iterator();
 
-        //Setting the image view
+        while (iterFood.hasNext()) {
+            Food f = iterFood.next();
+            if(f.corner.compare(bomberMan.corner)) {
+                MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
+                collectPlayer.play();
+                bombs++;
+                speed++;
 
 
-        if (bombIt == true){
-            if(bombs>0){
+
+
+            }else{
+            gc.setFill(f.color);
+            gc.fillOval(f.coord.x , f.coord.y , foodSize, foodSize);}
+        }
+
+        foodList.removeIf(f -> f.corner.compare(bomberMan.corner));
+        Random rand = new Random();
+        if(foodList.size() < 1){
+            for (int i = 0; i < 1 + rand.nextInt(3); i++) {
+                foodList.add(new Food(width, height, foodSize));
+            }}
+
+    }
+
+    public static void addBomb(){
+        if(bombs>0){
             bombs--;
             bombList.add(new Bomb(new Coord(bomberMan.coord.x, bomberMan.coord.y), bombSize));
-            }
-            bombIt = false;
+        }else{
+            MediaPlayer errorPlayer = new MediaPlayer(errorMusic);
+            errorPlayer.play();
         }
     }
 
@@ -254,14 +235,31 @@ public class PacBomb extends Application  {
 
     public static class Food{
         Coord coord;
-        int color;
+        Color color;
         Corner corner;
 
         public Food(int width, int height, int foodSize){
             Random rand = new Random();
-            this.color = rand.nextInt(5);
-            this.coord = new Coord(rand.nextInt(width), rand.nextInt(height));
+            this.color = color(rand.nextInt(5));
+           this.coord = new Coord( rand.nextInt(width-foodSize),  rand.nextInt(height-foodSize));
+
             this.corner = new Corner(this.coord, foodSize );
+        }
+
+        private Color color (int rand) {
+            switch (rand) {
+                case 0:
+                    return Color.PURPLE;
+                case 1:
+                    return Color.LIGHTBLUE;
+                case 2:
+                    return Color.YELLOW;
+                case 3:
+                    return Color.PINK;
+                case 4:
+                    return Color.ORANGE;
+            }
+            return Color.WHITE;
         }
     }
     public static class Bomb {
