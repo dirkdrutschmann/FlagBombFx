@@ -173,8 +173,8 @@ public class PacBomb extends Application  {
         gc.fillText("BOMBS: " + bombs, 10, 30);
 
 
-       // gc.setFill(Color.RED);
-        //gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
+        gc.setFill(Color.RED);
+        gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
         gc.drawImage(pacMan, bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
 
         Iterator<Bomb> iterBomb = bombList.iterator();
