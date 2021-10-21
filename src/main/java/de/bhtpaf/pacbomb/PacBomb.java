@@ -32,6 +32,7 @@ public class PacBomb extends Application  {
     static Food food = new Food(width, height, foodSize);
     static int bomberManSize = 50;
     static int bombSize = 50;
+    static int boomFactor = 2;
     static int step = 2;
     static Dir direction = Dir.right;
     static boolean gameOver = false;
@@ -184,7 +185,10 @@ public class PacBomb extends Application  {
             if (b.state == 60) {
                 iterBomb.remove();
                 return;
-            } else {
+            }   else if (b.state >= 50) {
+                gc.drawImage(bombImages[b.state / 10], b.coord.x-(boomFactor * bombSize)/4, b.coord.y-(boomFactor * bombSize)/4, boomFactor * bombSize, boomFactor * bombSize);
+                b.state++;
+            }else {
                 gc.drawImage(bombImages[b.state / 10], b.coord.x, b.coord.y, bombSize, bombSize);
                 b.state++;
             }
