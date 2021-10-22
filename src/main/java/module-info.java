@@ -9,6 +9,7 @@ module de.bhtpaf.pacbomb {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires javafx.media;
 
     opens de.bhtpaf.pacbomb to javafx.fxml;
     exports de.bhtpaf.pacbomb;
