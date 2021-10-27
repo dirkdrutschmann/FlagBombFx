@@ -1,9 +1,14 @@
 package de.bhtpaf.pacbomb.controllers;
 
+import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Game;
+import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
@@ -24,6 +29,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.controlsfx.control.action.Action;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -78,6 +84,28 @@ public class MainController {
                 }
             }
         });
+    }
+
+    public void callRegistraionScene(ActionEvent event)
+    {
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("registerUser.fxml"));
+            Parent root = (Parent)loader.load();
+            Scene scene = new Scene(root, 1000, 600);
+
+            RegisterUserController controller = (RegisterUserController)loader.getController();
+            controller.setMainStage(_mainStage);
+            controller.setGoBackScene(_mainStage.getScene());
+            controller.setApi(_api);
+
+            _mainStage.setScene(scene);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Util.showErrorMessageBox(e.getMessage());
+        }
     }
 
     public void setMainStage(Stage stage)

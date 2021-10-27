@@ -12,9 +12,10 @@ module de.bhtpaf.pacbomb {
     requires javafx.media;
     requires org.apache.httpcomponents.httpclient;
     requires org.apache.httpcomponents.httpcore;
+    requires com.google.gson;
 
-    opens de.bhtpaf.pacbomb to javafx.fxml;
     exports de.bhtpaf.pacbomb;
     exports de.bhtpaf.pacbomb.controllers;
     exports de.bhtpaf.pacbomb.services;
+    exports de.bhtpaf.pacbomb.helper.classes;
 }

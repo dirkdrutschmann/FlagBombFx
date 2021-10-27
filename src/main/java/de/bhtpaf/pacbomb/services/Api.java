@@ -1,8 +1,14 @@
 package de.bhtpaf.pacbomb.services;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import de.bhtpaf.pacbomb.helper.classes.User;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -18,6 +24,41 @@ public class Api {
     {
         _apiUrl = apiUrl;
         _client = HttpClients.createDefault();
+    }
+
+    public User registerUser(User user)
+    {
+        String path = _apiUrl + "/register";
+        StringEntity entity = new StringEntity(user.toJson(), ContentType.APPLICATION_JSON);
+
+        HttpPost request = new HttpPost(path);
+        request.setEntity(entity);
+
+        User newUser = null;
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(request);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            HttpEntity responseEntity = response.getEntity();
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                String result = _getStringFromInputStream(responseEntity.getContent());
+                newUser = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create().fromJson(result, User.class);
+            }
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return newUser;
     }
 
     public boolean existsMail(String mail)

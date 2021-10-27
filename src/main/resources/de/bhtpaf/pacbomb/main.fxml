@@ -11,8 +11,8 @@
                <TextField fx:id="edt_username" layoutX="400.0" layoutY="50.0" prefHeight="25.0" prefWidth="200.0" />
                <Label layoutX="400.0" layoutY="90.0" text="Passwort" />
                <TextField fx:id="edt_password" layoutX="400.0" layoutY="110.0" prefHeight="25.0" prefWidth="200.0" />
-               <Button layoutX="520.0" layoutY="150.0" mnemonicParsing="false" prefWidth="80" text="Login" onAction="#loginUser" />
-               <Hyperlink layoutX="450.0" layoutY="200.0" text="Noch kein Account?" />
+               <Button layoutX="520.0" layoutY="150.0" mnemonicParsing="false" onAction="#loginUser" prefWidth="80" text="Login" />
+               <Hyperlink layoutX="450.0" layoutY="200.0" onAction="#callRegistraionScene" text="Noch kein Account?" />
            </children>
        </Pane>
    </children>
