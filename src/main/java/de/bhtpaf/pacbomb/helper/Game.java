@@ -27,8 +27,6 @@ public class Game {
     private int width = 1000;
     private int height = width;
 
-
-
     private int boomFactor = 2;
     private int squareFactor = 30;
     private int step = 3;
@@ -61,7 +59,6 @@ public class Game {
     private MediaPlayer backgroundPlayer = new MediaPlayer(backgroundMusic);
     private BomberMan bomberMan = new BomberMan(height, bomberManSize);
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
-    //Upper Left of Image / Image is set 50x50
 
     private boolean bombIt = false;
     private List<Bomb> bombList = new ArrayList<Bomb>();

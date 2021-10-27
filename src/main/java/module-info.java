@@ -10,8 +10,11 @@ module de.bhtpaf.pacbomb {
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
     requires javafx.media;
+    requires org.apache.httpcomponents.httpclient;
+    requires org.apache.httpcomponents.httpcore;
 
     opens de.bhtpaf.pacbomb to javafx.fxml;
     exports de.bhtpaf.pacbomb;
     exports de.bhtpaf.pacbomb.controllers;
+    exports de.bhtpaf.pacbomb.services;
 }
