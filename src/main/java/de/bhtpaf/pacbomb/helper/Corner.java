@@ -5,9 +5,11 @@ public class Corner{
     public Coord downLeft;
     public Coord upperRight;
     public Coord downRight;
+    public int width;
 
 
     public Corner(Coord coord, int width){
+        this.width = width;
         this.downLeft = coord;
         this.upperLeft = new Coord(coord.x, coord.y + width);
         this.downRight = new Coord(coord.x + width, coord.y);

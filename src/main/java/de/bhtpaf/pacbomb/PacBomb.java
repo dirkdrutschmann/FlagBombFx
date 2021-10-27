@@ -28,14 +28,14 @@ public class PacBomb extends Application  {
     // variable
     static int speed = 20;
     static int bombs = 10;
-    static int width = 500;
+    static int width = 1000;
     static int height = width;
 
 
 
     static int boomFactor = 2;
-    static int step = 2;
-    static int squareFactor = 20;
+    static int squareFactor = 30;
+    static int step = 3;
     static int bomberManSize = width/squareFactor;
     static int bombSize = width/squareFactor;
     static int foodSize = width/squareFactor;
@@ -131,9 +131,12 @@ public class PacBomb extends Application  {
     // tick
     public static void tick(GraphicsContext gc) {
         if (gameOver) {
-            gc.setFill(Color.RED);
+
+            gc.setFill(Color.BLACK);
             gc.setFont(new Font("", 50));
-            gc.fillText("GAME OVER", 100, 250);
+            String string="GAME OVER";
+            double factor = string.length()*fontSizeTop*0.5;
+            gc.fillText(string, height/2-factor, width/2);
             gameOverPlayer.play();
             return;
         }
@@ -142,10 +145,10 @@ public class PacBomb extends Application  {
 
         switch (direction) {
             case up:
-                bomberMan.addY(-step);
-                if (bomberMan.corner.downRight.y < grid.rows.get(0).get(0).downRight.y) {
-                    gameOver = true;
-                }
+                    bomberMan.addY(-step);
+                    if (bomberMan.corner.downRight.y < grid.rows.get(0).get(0).downRight.y) {
+                        gameOver = true;
+                    }
                 break;
             case down:
                 bomberMan.addY(step);

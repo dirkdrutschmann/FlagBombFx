@@ -19,7 +19,10 @@ public class Grid {
 
 
             for (int j = this.height; j < height - this.height; j = j + height/squareFactor){
-            column.add(new Tile(new Coord(i, j), this.width, Type.random()));
+
+                    column.add(new Tile(new Coord(i, j), this.width, Type.random()));
+
+
             }
             rows.add(column);
         }
@@ -29,23 +32,11 @@ public class Grid {
 
     public void draw (GraphicsContext gc){
         this.rows.forEach((column)  ->
-                {column.forEach((corner)-> {
+                {column.forEach((tile)-> {
                     gc.setFill(Color.BLACK);
-                    gc.fillRect(corner.downLeft.x, corner.downLeft.y, this.width, this.height);
-                    switch (corner.type) {
-                        case wall:
-                            gc.setFill(Color.DARKCYAN);
-                            gc.fillRect(corner.downLeft.x + 1, corner.downLeft.y + 1 , this.width-2, this.height-2);
-                            break;
-                        case block:
-                            gc.setFill(Color.CHOCOLATE);
-                            gc.fillRect(corner.downLeft.x + 1, corner.downLeft.y + 1 , this.width-2, this.height-2);
-                            break;
-                        case free:
-                            gc.setFill(Color.LIGHTGRAY);
-                            gc.fillRect(corner.downLeft.x + 1, corner.downLeft.y + 1 , this.width-2, this.height-2);
-                            break;
-                    }});
+                    gc.fillRect(tile.downLeft.x, tile.downLeft.y, tile.width, tile.width);
+                    Type.draw(gc, tile);
+               });
                 });
     }
 
@@ -58,6 +49,16 @@ public class Grid {
             }
         }
         return coord;
+    }
+    public boolean hit (Corner corner, Type type){
+        for(List<Tile> list : this.rows){
+            for (Tile tile : list){
+                if(tile.compare(corner) && tile.type == type){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
