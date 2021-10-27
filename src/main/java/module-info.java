@@ -13,4 +13,5 @@ module de.bhtpaf.pacbomb {
 
     opens de.bhtpaf.pacbomb to javafx.fxml;
     exports de.bhtpaf.pacbomb;
+    exports de.bhtpaf.pacbomb.controllers;
 }
