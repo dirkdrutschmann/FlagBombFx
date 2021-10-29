@@ -2,6 +2,7 @@ package de.bhtpaf.pacbomb.helper;
 
 import de.bhtpaf.pacbomb.PacBomb;
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -15,12 +16,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Game {
+
+    private Scene _previousScene;
+    private Stage _mainStage;
 
     private int speed = 20;
     private int bombs = 10;
@@ -66,6 +67,9 @@ public class Game {
     
     public Game(Stage stage)
     {
+        _previousScene = stage.getScene();
+        _mainStage = stage;
+
         try {
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
@@ -88,6 +92,30 @@ public class Game {
                     if (now - lastTick > 1000000000 / speed) {
                         lastTick = now;
                         _tick(gc);
+                    }
+
+                    if (gameOver) {
+                        stop();
+
+                        gc.setFill(Color.BLACK);
+                        gc.setFont(new Font("", 50));
+                        String string = "GAME OVER";
+                        double factor = string.length()*fontSizeTop*0.5;
+                        gc.fillText(string, height/2-factor, width/2);
+                        gameOverPlayer.play();
+
+                        // Back to Overview in 5 Seconds
+                        new Timer().schedule(
+                                new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        Platform.runLater(() -> {
+                                            _mainStage.setScene(_previousScene);
+                                        });
+                                    }
+                                },
+                                5000
+                        );
                     }
                 }
 
@@ -118,26 +146,13 @@ public class Game {
             //If you do not want to use css style, you can just delete the next line.
             //  scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
-            stage.setScene(scene);
+            _mainStage.setScene(scene);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void _tick(GraphicsContext gc) {
-        if (gameOver) {
-
-            gc.setFill(Color.BLACK);
-            gc.setFont(new Font("", 50));
-            String string="GAME OVER";
-            double factor = string.length()*fontSizeTop*0.5;
-            gc.fillText(string, height/2-factor, width/2);
-            gameOverPlayer.play();
-            return;
-        }
-
-
-
         switch (direction) {
             case up:
                 bomberMan.addY(-step);

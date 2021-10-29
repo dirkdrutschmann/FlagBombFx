@@ -3,6 +3,7 @@ package de.bhtpaf.pacbomb.controllers;
 import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
+import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.apache.http.HttpEntity;
@@ -42,7 +44,7 @@ public class MainController {
     public TextField edt_username;
 
     @FXML
-    public TextField edt_password;
+    public PasswordField edt_password;
 
     public MainController()
     {
@@ -54,36 +56,55 @@ public class MainController {
     {
         event.consume();
 
-        String msg = "Nutzername muss angegeben werden!";
-        boolean showGame = false;
+        String msg = "Nutzername muss angegeben werden und Passwort müssen angegeben werden!";
+        boolean loggedIn = false;
+        User loginUser = new User();
 
-        if (!edt_username.textProperty().get().equals(""))
+        if (!edt_username.textProperty().get().equals("") && !edt_password.textProperty().get().equals(""))
         {
-            showGame = _api.existsUsername(edt_username.textProperty().get());
+            loginUser.username = edt_username.textProperty().get();
+            loginUser.password = edt_password.textProperty().get();
 
-            if (showGame)
+            loginUser = _api.loginUser(loginUser);
+
+            if (loginUser == null || loginUser.jwtToken == null)
             {
-                msg = "Viel Spaß!";
+                msg = "Login fehlgeschlagen";
             }
             else
             {
-                msg = "Nutzer " + edt_username.textProperty().get() + " nicht gefunden.";
+                loggedIn = true;
             }
         }
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setContentText(msg);
+        if (!loggedIn)
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText(msg);
+            alert.showAndWait();
 
-        boolean finalShowGame = showGame;
-        alert.showAndWait().ifPresent((rs) -> {
-            if (rs == ButtonType.OK)
-            {
-                if (finalShowGame)
-                {
-                    Game game = new Game(_mainStage);
-                }
-            }
-        });
+            return;
+        }
+
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("overview.fxml"));
+            Parent root = (Parent)loader.load();
+            Scene scene = new Scene(root, 1000, 600);
+
+            OverviewController controller = (OverviewController)loader.getController();
+            controller.setMainStage(_mainStage);
+            controller.setApi(_api);
+            controller.setUser(loginUser);
+            controller.init();
+
+            _mainStage.setScene(scene);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Util.showErrorMessageBox(e.getMessage());
+        }
     }
 
     public void callRegistraionScene(ActionEvent event)

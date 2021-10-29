@@ -2,8 +2,10 @@ package de.bhtpaf.pacbomb.services;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import de.bhtpaf.pacbomb.helper.classes.JWT;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -46,7 +48,7 @@ public class Api {
             if (response.getStatusLine().getStatusCode() == 200)
             {
                 String result = _getStringFromInputStream(responseEntity.getContent());
-                newUser = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create().fromJson(result, User.class);
+                newUser = User.CreateFromJson(result);
             }
 
             EntityUtils.consume(responseEntity);
@@ -59,6 +61,73 @@ public class Api {
         }
 
         return newUser;
+    }
+
+    public User loginUser(User user)
+    {
+        String path = _apiUrl + "/Login";
+        JWT jwtToken = null;
+
+        StringEntity entity = new StringEntity(user.toJson(), ContentType.APPLICATION_JSON);
+
+        HttpPost request = new HttpPost(path);
+        request.setEntity(entity);
+        try
+        {
+            CloseableHttpResponse response = _client.execute(request);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            HttpEntity responseEntity = response.getEntity();
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                jwtToken = JWT.CreateFromJson(_getStringFromInputStream(responseEntity.getContent()));
+            }
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        // Login failed
+        if (jwtToken == null)
+        {
+            return null;
+        }
+
+        path = _apiUrl + "/User";
+        HttpGet getRequest = new HttpGet(path);
+        getRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + jwtToken.token);
+
+        User loggedInUser = null;
+        try
+        {
+            CloseableHttpResponse response = _client.execute(getRequest);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            HttpEntity responseEntity = response.getEntity();
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                String result = _getStringFromInputStream(responseEntity.getContent());
+                loggedInUser = User.CreateFromJson(result);
+                loggedInUser.jwtToken = jwtToken;
+            }
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return  loggedInUser;
     }
 
     public boolean existsMail(String mail)

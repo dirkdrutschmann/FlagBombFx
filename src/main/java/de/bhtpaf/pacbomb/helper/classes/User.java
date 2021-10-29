@@ -1,6 +1,7 @@
 package de.bhtpaf.pacbomb.helper.classes;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.Date;
 
@@ -26,6 +27,8 @@ public class User
 
     public boolean isAdmin;
 
+    public JWT jwtToken;
+
     public User()
     { }
 
@@ -47,5 +50,10 @@ public class User
     {
         Gson gson = new Gson();
         return gson.toJson(this);
+    }
+
+    public static User CreateFromJson(String json)
+    {
+        return new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create().fromJson(json, User.class);
     }
 }
