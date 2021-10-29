@@ -56,13 +56,13 @@ public class MainController {
     {
         event.consume();
 
-        String msg = "Nutzername muss angegeben werden und Passwort müssen angegeben werden!";
+        String msg = "Nutzername und Passwort müssen angegeben werden!";
         boolean loggedIn = false;
         User loginUser = new User();
 
         if (!edt_username.textProperty().get().equals("") && !edt_password.textProperty().get().equals(""))
         {
-            loginUser.username = edt_username.textProperty().get();
+            loginUser.username = edt_username.textProperty().get().trim();
             loginUser.password = edt_password.textProperty().get();
 
             loginUser = _api.loginUser(loginUser);
@@ -97,6 +97,8 @@ public class MainController {
             controller.setApi(_api);
             controller.setUser(loginUser);
             controller.init();
+
+            edt_password.textProperty().set("");
 
             _mainStage.setScene(scene);
         }
