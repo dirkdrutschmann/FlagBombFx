@@ -14,6 +14,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class MainController {
     private Stage _mainStage;
     private final Api _api;
@@ -64,8 +66,7 @@ public class MainController {
             return;
         }
 
-        try
-        {
+        try {
             FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("overview.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 1000, 600);
@@ -79,15 +80,13 @@ public class MainController {
             edt_password.textProperty().set("");
 
             _mainStage.setScene(scene);
-        }
-        catch (Exception e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
             Util.showErrorMessageBox(e.getMessage());
         }
     }
 
-    public void callRegistraionScene(ActionEvent event)
+    public void callRegistrationScene(ActionEvent event)
     {
         event.consume();
 

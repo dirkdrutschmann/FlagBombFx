@@ -37,10 +37,10 @@ public class RegisterUserController
         event.consume();
 
         User newUser = new User();
-        newUser.username = edt_username.textProperty().getValue();
-        newUser.prename = edt_prename.textProperty().getValue();
-        newUser.lastname = edt_lastname.textProperty().getValue();
-        newUser.email = edt_email.textProperty().getValue();
+        newUser.username = edt_username.textProperty().getValue().trim();
+        newUser.prename = edt_prename.textProperty().getValue().trim();
+        newUser.lastname = edt_lastname.textProperty().getValue().trim();
+        newUser.email = edt_email.textProperty().getValue().trim();
         newUser.password = edt_password.textProperty().getValue();
 
         newUser = new User(_api.registerUser(newUser));

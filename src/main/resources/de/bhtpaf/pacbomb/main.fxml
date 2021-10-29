@@ -10,6 +10,6 @@
        <Label layoutX="400.0" layoutY="90.0" text="Passwort" />
        <PasswordField fx:id="edt_password" layoutX="400.0" layoutY="110.0" prefHeight="25.0" prefWidth="200.0" onAction="#loginUser" />
        <Button layoutX="520.0" layoutY="150.0" mnemonicParsing="false" onAction="#loginUser" prefWidth="80" text="Login" />
-       <Hyperlink layoutX="450.0" layoutY="200.0" onAction="#callRegistraionScene" text="Noch kein Account?" />
+       <Hyperlink layoutX="450.0" layoutY="200.0" onAction="#callRegistrationScene" text="Noch kein Account?" />
    </Pane>
 </AnchorPane>
