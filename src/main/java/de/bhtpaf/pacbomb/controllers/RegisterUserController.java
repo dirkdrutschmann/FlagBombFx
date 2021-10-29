@@ -1,6 +1,5 @@
 package de.bhtpaf.pacbomb.controllers;
 
-import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.event.ActionEvent;

@@ -28,7 +28,7 @@ public class OverviewController {
     public void startGame(ActionEvent event)
     {
         event.consume();
-        Game game = new Game(_mainStage);
+        new Game(_mainStage);
     }
 
     public void setUser(User user)
