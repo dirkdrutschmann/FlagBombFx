@@ -63,6 +63,8 @@ public class MainController {
             alert.setContentText(msg);
             alert.showAndWait();
 
+            edt_password.textProperty().set("");
+
             return;
         }
 

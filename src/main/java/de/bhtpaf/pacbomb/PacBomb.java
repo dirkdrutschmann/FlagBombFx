@@ -23,6 +23,13 @@ public class PacBomb extends Application  {
 
             primaryStage.setTitle("PacBomb");
             primaryStage.setScene(scene);
+
+            primaryStage.setMinHeight(639);
+            primaryStage.setMaxHeight(639);
+
+            primaryStage.setMinWidth(1016);
+            primaryStage.setMaxWidth(1016);
+
             primaryStage.show();
         }
         catch (Exception e)
