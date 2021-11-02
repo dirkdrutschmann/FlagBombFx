@@ -29,7 +29,7 @@ public class Game
     private Stage _mainStage;
     private User _user = null;
 
-    private int speed = 50;
+    private int speed = 300;
     private int bombs = 10;
     private int width = 1000;
     private int height = width;
@@ -40,10 +40,10 @@ public class Game
     private int bomberManSize = width / squareFactor;
     private int bombSize = width / squareFactor;
     private int foodSize = width / squareFactor;
-    private Grid grid = new Grid (width, height,squareFactor);
+    private Grid grid = new Grid (width, height, squareFactor);
 
     private Dir _direction = Dir.right;
-    private Dir _forbiddenDirection = null;
+    private List<Dir> _forbiddenDirection = new ArrayList();
 
     private boolean gameOver = false;
     private int fontSizeTop = 20;
@@ -67,12 +67,12 @@ public class Game
     private Media gameOverMusic = new Media(PacBomb.class.getResource("gameover.wav").toString());
     private Media errorMusic = new Media(PacBomb.class.getResource("empty.wav").toString());
     private MediaPlayer backgroundPlayer = new MediaPlayer(backgroundMusic);
-    private BomberMan bomberMan = new BomberMan(height, bomberManSize);
+    private BomberMan bomberMan = null;
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
     private boolean bombIt = false;
-    private List<Bomb> bombList = new ArrayList<Bomb>();
-    private List<Food> foodList = new ArrayList<Food>(){{add(new Food(width, height, foodSize, grid));}};
+    private List<Bomb> bombList = new ArrayList();
+    private List<Food> foodList = new ArrayList(){{add(new Food(width, height, foodSize, grid));}};
     
     public Game(Stage stage, User user)
     {
@@ -82,6 +82,9 @@ public class Game
 
         try
         {
+            bomberManSize = squareFactor;
+            bomberMan = new BomberMan(bomberManSize);
+
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
             backgroundPlayer.play();
@@ -147,19 +150,19 @@ public class Game
             // control
             scene.addEventFilter(KeyEvent.KEY_PRESSED, key -> {
 
-                if (key.getCode() == KeyCode.UP && (_forbiddenDirection == null || _forbiddenDirection != Dir.up))
+                if (key.getCode() == KeyCode.UP && !_forbiddenDirection.contains(Dir.up))
                 {
                     _direction = Dir.up;
                 }
-                else if (key.getCode() == KeyCode.LEFT && (_forbiddenDirection == null || _forbiddenDirection != Dir.left))
+                else if (key.getCode() == KeyCode.LEFT && !_forbiddenDirection.contains(Dir.left))
                 {
                     _direction = Dir.left;
                 }
-                else if (key.getCode() == KeyCode.DOWN && (_forbiddenDirection == null || _forbiddenDirection != Dir.down))
+                else if (key.getCode() == KeyCode.DOWN && !_forbiddenDirection.contains(Dir.down))
                 {
                     _direction = Dir.down;
                 }
-                else if (key.getCode() == KeyCode.RIGHT && (_forbiddenDirection == null || _forbiddenDirection != Dir.right))
+                else if (key.getCode() == KeyCode.RIGHT && !_forbiddenDirection.contains(Dir.right))
                 {
                     _direction = Dir.right;
                 }
@@ -192,61 +195,9 @@ public class Game
 
     private void _tick(GraphicsContext gc)
     {
-        switch (_direction)
+        if (!grid.hit(bomberMan.square, _direction))
         {
-            case up:
-                if (bomberMan.square.downRight.y <= grid.rows.get(0).get(0).downRight.y)
-                {
-                    _direction = Dir.stand;
-                    _forbiddenDirection = Dir.up;
-                }
-                else
-                {
-                    bomberMan.addY(-step);
-                }
-
-                break;
-            case down:
-                if (bomberMan.square.upperRight.y >= grid.rows.get(grid.rows.size() - 1).get(grid.rows.get(0).size() - 1).upperRight.y)
-                {
-                    _direction = Dir.stand;
-                    _forbiddenDirection = Dir.down;
-                }
-                else
-                {
-                    bomberMan.addY(step);
-                }
-
-                break;
-            case left:
-                if (bomberMan.square.downLeft.x <= grid.rows.get(0).get(0).downLeft.x)
-                {
-                    _direction = Dir.stand;
-                    _forbiddenDirection = Dir.left;
-                }
-                else
-                {
-                    bomberMan.addX(-step);
-                }
-
-                break;
-            case right:
-                if (bomberMan.square.upperRight.x >= grid.rows.get(grid.rows.size() - 1).get(grid.rows.get(0).size() - 1).upperRight.x)
-                {
-                    _direction = Dir.stand;
-                    _forbiddenDirection = Dir.right;
-                }
-                else
-                {
-                    bomberMan.addX(step);
-                }
-
-                break;
-        }
-
-        if (Dir.isOpposite(_direction, _forbiddenDirection))
-        {
-            _forbiddenDirection = null;
+            bomberMan.doStep(_direction, step);
         }
 
         // fill
@@ -272,6 +223,8 @@ public class Game
 
 
         gc.drawImage(pacMan, bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
+        // gc.setFill(Color.BLUE);
+        // gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, grid.columns.get(0).get(0).downLeft.y);
 
         Iterator<Bomb> iterBomb = bombList.iterator();
 
@@ -339,8 +292,8 @@ public class Game
     {
         if(bombs > 0)
         {
-            int x = bomberMan.coord.x + bomberMan.bomberManSize / 2;
-            int y = bomberMan.coord.y - bomberMan.bomberManSize / 2;
+            int x = bomberMan.coord.x + bomberMan.width / 2;
+            int y = bomberMan.coord.y - bomberMan.width / 2;
 
             Square pos = grid.find(new Coord(x, y));
 

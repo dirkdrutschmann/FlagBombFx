@@ -16,8 +16,18 @@ public class Square {
 
     public boolean compare(Square square)
     {
-        return (downLeft.x <= square.upperRight.x) && (square.downLeft.x <= upperRight.x) && (downLeft.y <= square.upperRight.y) && (square.downLeft.y <= upperRight.y);
+        if
+        (
+               downLeft.x == square.downLeft.x
+            && downLeft.y == square.downLeft.y
+        )
+        {
+            return true;
+        }
+
+        return false;
     }
+
     public boolean compare(Coord coord){
 
         if

@@ -18,7 +18,7 @@ public class Food{
 
         this.color = color(rand.nextInt(5));
 
-        Coord work = grid.rows.get(rand.nextInt(grid.rows.size())).get(rand.nextInt(grid.rows.get(0).size())).downLeft;
+        Coord work = grid.columns.get(rand.nextInt(grid.columns.size())).get(rand.nextInt(grid.columns.get(0).size())).downLeft;
 
         this.coord = new Coord(work.x + 1,work.y + 1);
         this.foodSize =  foodSize -2;
