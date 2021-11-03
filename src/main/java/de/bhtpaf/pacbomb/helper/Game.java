@@ -232,7 +232,6 @@ public class Game
         {
             Bomb b = iterBomb.next();
             int bombState = b.getState();
-
             if (bombState == 60)
             {
                 iterBomb.remove();
@@ -241,12 +240,13 @@ public class Game
             else if (bombState >= 50)
             {
                 gc.drawImage(bombImages[bombState / 10], b.getCoord().x - (boomFactor * bombSize)/4, b.getCoord().y - (boomFactor * bombSize)/4, boomFactor * bombSize, boomFactor * bombSize);
-                b.setState(bombState++);
+                b.setState(++bombState);
             }
             else
             {
                 gc.drawImage(bombImages[bombState / 10], b.getCoord().x, b.getCoord().y, bombSize, bombSize);
-                b.setState(bombState++);
+                b.setState(++bombState);
+
             }
 
             if (b.getState() == 52) {
