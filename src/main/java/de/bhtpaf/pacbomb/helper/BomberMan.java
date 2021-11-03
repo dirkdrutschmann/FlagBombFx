@@ -2,23 +2,19 @@ package de.bhtpaf.pacbomb.helper;
 
 import de.bhtpaf.pacbomb.helper.classes.map.Coord;
 import de.bhtpaf.pacbomb.helper.classes.map.Square;
+import de.bhtpaf.pacbomb.helper.classes.map.items.Item;
 
-public class BomberMan
+public class BomberMan extends Item
 {
-    public Coord coord;
-    public Square square;
     public int width;
 
-    public BomberMan(int width)
+    public BomberMan(int x, int y, int width)
     {
-        this.width = width;
-        this.coord = new Coord(0, width);
-        this.square = new Square(this.coord.x, this.coord.y, width);
+        super(x, y, width);
     }
 
     public void addX(int inc)
     {
-        this.coord.x += inc;
         this.square.downLeft.x += inc;
         this.square.downRight.x += inc;
         this.square.upperLeft.x += inc;
@@ -27,12 +23,10 @@ public class BomberMan
 
     public void addY(int inc)
     {
-        this.coord.y += inc;
         this.square.downLeft.y += inc;
         this.square.downRight.y += inc;
         this.square.upperLeft.y += inc;
         this.square.upperRight.y += inc;
-        // this.square = new Square(coord.x, coord.y, this.bomberManSize);
     }
 
     public void doStep(Dir direction, int step)

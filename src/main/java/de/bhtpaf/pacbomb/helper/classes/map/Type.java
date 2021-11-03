@@ -10,14 +10,15 @@ import java.util.Random;
 
 public enum Type {
     wall,
-    block,
     free;
 
     private static final List<Type> VALUES = List.of(values());
     private static final int SIZE = VALUES.size();
 
     private static final Random RANDOM = new Random();
-    private static Image wallImage = new Image(PacBomb.class.getResourceAsStream("wall.gif"));
+    private static final Image wallImage = new Image(PacBomb.class.getResourceAsStream("wall.png"));
+    private static final Image blockImage = new Image(PacBomb.class.getResourceAsStream("stone.png"));
+    private static final Image freeImage = new Image(PacBomb.class.getResourceAsStream("free.png"));
 
     public static Type random()
     {
@@ -28,14 +29,19 @@ public enum Type {
     {
         switch (tile.type) {
             case wall:
-                gc.drawImage(wallImage, tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
-                break;
-            case block:
-                gc.setFill(Color.CHOCOLATE);
-                gc.fillRect(tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
+                if(((Wall)tile).isDestroyable)
+                {
+                    gc.drawImage(wallImage, tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
+                }
+                else
+                {
+                    gc.drawImage(blockImage, tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
+                }
+
                 break;
             case free:
-                gc.setFill(Color.LIGHTGRAY);
+                //gc.drawImage(freeImage, tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
+                gc.setFill(Color.web("0x629E5E"));
                 gc.fillRect(tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
                 break;
         }

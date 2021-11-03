@@ -5,6 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Grid {
 
@@ -17,6 +18,8 @@ public class Grid {
         this.columnCount = width / squareFactor;
         this.rowCount = (height - 20) / squareFactor;
 
+        Random rand = new Random();
+
         List<Tile> row;
 
         for (int i = 0; i < this.columnCount; i++)
@@ -25,13 +28,28 @@ public class Grid {
 
             for (int k = 0; k < this.rowCount; k++)
             {
-                row.add(
-                    new Tile(
-                        new Coord(i * squareFactor, (k + 1) * squareFactor),
-                        squareFactor,
-                        Type.random()
-                    )
-                );
+                Type t = Type.random();
+
+                if (t == Type.wall)
+                {
+                    row.add(
+                        new Wall(
+                            new Coord(i * squareFactor, (k + 1) * squareFactor),
+                            squareFactor,
+                            rand.nextInt(500) %  2 == 0
+                        )
+                    );
+                }
+                else
+                {
+                    row.add(
+                        new Tile(
+                            new Coord(i * squareFactor, (k + 1) * squareFactor),
+                            squareFactor,
+                            t
+                        )
+                    );
+                }
             }
 
             columns.add(row);
@@ -42,9 +60,7 @@ public class Grid {
     {
         this.columns.forEach((column) -> {
             column.forEach((tile)-> {
-                gc.setFill(Color.BLACK);
-                gc.fillRect(tile.downLeft.x, tile.downLeft.y, tile.width, tile.width);
-                Type.draw(gc, tile);
+                tile.draw(gc);
            });
         });
     }
@@ -186,7 +202,7 @@ public class Grid {
             }
         }
 
-        if (refTile != null && refTile.type == Type.wall)
+        if (refTile != null && refTile instanceof Wall)
         {
             switch (direction)
             {

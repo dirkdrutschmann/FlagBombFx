@@ -2,9 +2,7 @@ package de.bhtpaf.pacbomb.helper;
 
 import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.classes.User;
-import de.bhtpaf.pacbomb.helper.classes.map.Coord;
-import de.bhtpaf.pacbomb.helper.classes.map.Grid;
-import de.bhtpaf.pacbomb.helper.classes.map.Square;
+import de.bhtpaf.pacbomb.helper.classes.map.*;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Food;
@@ -86,7 +84,7 @@ public class Game
         try
         {
             bomberManSize = squareFactor;
-            bomberMan = new BomberMan(bomberManSize);
+            bomberMan = new BomberMan(0, squareFactor, bomberManSize);
 
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
@@ -225,7 +223,7 @@ public class Game
         gc.fillText(string, width-factor, 20) ;
 
 
-        gc.drawImage(pacMan, bomberMan.coord.x, bomberMan.coord.y, bomberManSize, bomberManSize);
+        gc.drawImage(pacMan, bomberMan.square.downLeft.x, bomberMan.square.downLeft.y, bomberManSize, bomberManSize);
         // gc.setFill(Color.BLUE);
         // gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, grid.columns.get(0).get(0).downLeft.y);
 
@@ -242,34 +240,52 @@ public class Game
             }
             else if (bombState >= 50)
             {
-                gc.drawImage(bombImages[bombState / 10], b.getCoord().x - (boomFactor * bombSize)/4, b.getCoord().y - (boomFactor * bombSize)/4, boomFactor * bombSize, boomFactor * bombSize);
+                gc.drawImage(bombImages[bombState / 10], b.square.downLeft.x - (boomFactor * bombSize)/4, b.square.downLeft.y - (boomFactor * bombSize)/4, boomFactor * bombSize, boomFactor * bombSize);
                 b.setState(++bombState);
             }
             else
             {
-                gc.drawImage(bombImages[bombState / 10], b.getCoord().x, b.getCoord().y, bombSize, bombSize);
+                gc.drawImage(bombImages[bombState / 10], b.square.downLeft.x, b.square.downLeft.y, bombSize, bombSize);
                 b.setState(++bombState);
 
             }
 
+            // Bombe explodiert
             if (b.getState() == 52) {
                 MediaPlayer boomPlayer = new MediaPlayer(soundBoom);
                 boomPlayer.play();
+
+                List<ExtendedTile> infected = b.getInfectedTiles(grid);
+
+                for (ExtendedTile field : infected)
+                {
+                    if (field.tile() instanceof Wall && ((Wall)field.tile()).isDestroyable)
+                    {
+                        Tile freeTile = new Tile(field.tile().downLeft, field.tile().width, Type.free);
+                        freeTile.draw(gc);
+
+                        grid.columns.get(field.index().column).set(field.index().row, freeTile);
+                    }
+                }
+
+
             }
         }
 
-        Iterator<Food> iterFood = foodList.iterator();
-
-        while (iterFood.hasNext())
+        for (int i = 0; i < foodList.size(); i++)
         {
-            Food f = iterFood.next();
-            if(f.square.compare(bomberMan.square))
+            Food f = foodList.get(i);
+
+            Tile food = grid.find(f.getMiddleCoord());
+            Tile bm = grid.find(bomberMan.getMiddleCoord());
+
+            if(food.compare(bm))
             {
                 MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
                 collectPlayer.play();
                 bombs++;
-                speed++;
 
+                foodList.remove(f);
             }
             else
             {
@@ -280,15 +296,13 @@ public class Game
 
         Random rand = new Random();
 
-        if(foodList.size() < 1)
+        if(foodList.size() < 3)
         {
-            for (int i = 0; i < 1 + rand.nextInt(3); i++)
+            for (int i = 0; i < 1 + rand.nextInt(5 - foodList.size()); i++)
             {
                 foodList.add(Food.getRandom(grid));
             }
         }
-
-        foodList.removeIf(f -> f.square.compare(bomberMan.square));
 
     }
 
