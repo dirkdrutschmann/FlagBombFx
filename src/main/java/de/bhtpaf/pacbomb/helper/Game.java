@@ -6,6 +6,7 @@ import de.bhtpaf.pacbomb.helper.classes.map.Coord;
 import de.bhtpaf.pacbomb.helper.classes.map.Grid;
 import de.bhtpaf.pacbomb.helper.classes.map.Square;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bomb;
+import de.bhtpaf.pacbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Food;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -73,7 +74,7 @@ public class Game
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
     private boolean bombIt = false;
-    private List<Bomb> bombList = new ArrayList();
+    private Bombs _bombList = new Bombs();
     private List<Food> foodList = new ArrayList();
     
     public Game(Stage stage, User user)
@@ -228,7 +229,7 @@ public class Game
         // gc.setFill(Color.BLUE);
         // gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, grid.columns.get(0).get(0).downLeft.y);
 
-        Iterator<Bomb> iterBomb = bombList.iterator();
+        Iterator<Bomb> iterBomb = _bombList.iterator();
 
         while (iterBomb.hasNext())
         {
@@ -298,11 +299,8 @@ public class Game
             int x = (bomberMan.square.downLeft.x + bomberMan.square.downRight.x) / 2;
             int y = (bomberMan.square.upperLeft.y + bomberMan.square.downLeft.y) / 2;
 
-            Square pos = grid.find(new Coord(x, y));
-
-            if (pos != null)
+            if (_bombList.placeOnGrid(grid, x, y) > 0)
             {
-                bombList.add (new Bomb(pos));
                 bombs--;
             }
         }
