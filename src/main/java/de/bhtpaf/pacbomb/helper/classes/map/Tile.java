@@ -1,8 +1,8 @@
 package de.bhtpaf.pacbomb.helper.classes.map;
 
 public class Tile extends Square {
-    Type type;
-    int width;
+    public Type type;
+    public int width;
 
     public Tile(Coord coord, int width, Type type)
     {

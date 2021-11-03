@@ -1,4 +1,4 @@
-package de.bhtpaf.pacbomb.helper;
+package de.bhtpaf.pacbomb.helper.classes.map.items;
 
 import de.bhtpaf.pacbomb.helper.classes.map.Coord;
 import de.bhtpaf.pacbomb.helper.classes.map.Square;

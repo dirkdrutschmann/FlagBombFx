@@ -1,24 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.bhtpaf.pacbomb.controllers.OverviewController">
   <SplitPane dividerPositions="0.1" orientation="VERTICAL" pickOnBounds="false" prefHeight="600.0" prefWidth="1000.0">
-      <AnchorPane minHeight="60.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" maxHeight="60.0">
-          <Label fx:id="lb_user" layoutX="14.0" layoutY="20.0" prefHeight="17.0" prefWidth="87.0" text="Name Benutzer" />
+      <AnchorPane maxHeight="60.0" minHeight="50.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+          <BorderPane fx:id="img_pane" layoutX="14.0" layoutY="4.0" prefHeight="49.0" prefWidth="49.0" style="-fx-background-color: #e4e4e4;">
+            <center>
+                <ImageView fx:id="img_user" cache="true" fitHeight="42.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
+            </center>
+          </BorderPane>
+          <Label fx:id="lb_user" layoutX="69.0" layoutY="20.0" prefHeight="17.0" prefWidth="87.0" text="Name Benutzer" />
           <Button layoutX="883.0" layoutY="16.0" mnemonicParsing="false" onAction="#logoutUser" prefHeight="25.0" prefWidth="101.0" text="Abmelden" />
+
       </AnchorPane>
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
           <SplitPane dividerPositions="0.7" prefHeight="540.0" prefWidth="1000.0">
-              <AnchorPane minHeight="0.0" minWidth="700.0" prefHeight="160.0" prefWidth="700.0" maxWidth="700.0">
+              <AnchorPane maxWidth="700.0" minHeight="0.0" minWidth="700.0" prefHeight="160.0" prefWidth="700.0">
                   <Button layoutX="303.0" layoutY="257.0" mnemonicParsing="false" onAction="#startGame" prefHeight="25.0" prefWidth="90.0" text="Spiel starten" />
               </AnchorPane>
-              <AnchorPane minHeight="0.0" minWidth="300.0" prefHeight="160.0" prefWidth="300.0" maxWidth="300.0">
+              <AnchorPane maxWidth="300.0" minHeight="0.0" minWidth="300.0" prefHeight="160.0" prefWidth="300.0">
                   <Label layoutX="14.0" layoutY="14.0" text="Verfügbare Spieler" />
                   <ListView layoutX="13.0" layoutY="41.0" pickOnBounds="false" prefHeight="200.0" prefWidth="270.0" />
               </AnchorPane>
+            <cursor>
+               <Cursor fx:constant="DEFAULT" />
+            </cursor>
           </SplitPane>
       </AnchorPane>
+      <cursor>
+         <Cursor fx:constant="DEFAULT" />
+      </cursor>
   </SplitPane>
 </AnchorPane>

@@ -5,6 +5,8 @@ import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.classes.map.Coord;
 import de.bhtpaf.pacbomb.helper.classes.map.Grid;
 import de.bhtpaf.pacbomb.helper.classes.map.Square;
+import de.bhtpaf.pacbomb.helper.classes.map.items.Bomb;
+import de.bhtpaf.pacbomb.helper.classes.map.items.Food;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -72,7 +74,7 @@ public class Game
 
     private boolean bombIt = false;
     private List<Bomb> bombList = new ArrayList();
-    private List<Food> foodList = new ArrayList(){{add(new Food(width, height, foodSize, grid));}};
+    private List<Food> foodList = new ArrayList();
     
     public Game(Stage stage, User user)
     {
@@ -271,20 +273,21 @@ public class Game
             else
             {
                 gc.setFill(f.color);
-                gc.fillOval(f.coord.x , f.coord.y , f.foodSize, f.foodSize);
+                gc.fillOval(f.square.downLeft.x , f.square.downLeft.y , f.foodSize, f.foodSize);
             }
         }
 
-        foodList.removeIf(f -> f.square.compare(bomberMan.square));
         Random rand = new Random();
 
         if(foodList.size() < 1)
         {
             for (int i = 0; i < 1 + rand.nextInt(3); i++)
             {
-                foodList.add(new Food(width, height, foodSize, grid));
+                foodList.add(Food.getRandom(grid));
             }
         }
+
+        foodList.removeIf(f -> f.square.compare(bomberMan.square));
 
     }
 
@@ -292,8 +295,8 @@ public class Game
     {
         if(bombs > 0)
         {
-            int x = bomberMan.coord.x + bomberMan.width / 2;
-            int y = bomberMan.coord.y - bomberMan.width / 2;
+            int x = (bomberMan.square.downLeft.x + bomberMan.square.downRight.x) / 2;
+            int y = (bomberMan.square.upperLeft.y + bomberMan.square.downLeft.y) / 2;
 
             Square pos = grid.find(new Coord(x, y));
 

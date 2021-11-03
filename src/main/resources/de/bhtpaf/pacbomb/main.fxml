@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.bhtpaf.pacbomb.controllers.MainController">
@@ -8,8 +9,9 @@
        <Label layoutX="400.0" layoutY="30.0" text="Nutzername" />
        <TextField fx:id="edt_username" layoutX="400.0" layoutY="50.0" prefHeight="25.0" prefWidth="200.0" />
        <Label layoutX="400.0" layoutY="90.0" text="Passwort" />
-       <PasswordField fx:id="edt_password" layoutX="400.0" layoutY="110.0" prefHeight="25.0" prefWidth="200.0" onAction="#loginUser" />
-       <Button layoutX="520.0" layoutY="150.0" mnemonicParsing="false" onAction="#loginUser" prefWidth="80" text="Login" />
+       <PasswordField fx:id="edt_password" layoutX="400.0" layoutY="110.0" onAction="#loginUser" prefHeight="25.0" prefWidth="200.0" />
+       <Button fx:id="bt_login" layoutX="520.0" layoutY="150.0" mnemonicParsing="false" onAction="#loginUser" prefWidth="80" text="Login" />
+       <ImageView fx:id="img_loading" fitHeight="50.0" fitWidth="50.0" layoutX="400.0" layoutY="150.0" pickOnBounds="true" preserveRatio="true" visible="false" />
        <Hyperlink layoutX="450.0" layoutY="200.0" onAction="#callRegistrationScene" text="Noch kein Account?" />
    </Pane>
 </AnchorPane>

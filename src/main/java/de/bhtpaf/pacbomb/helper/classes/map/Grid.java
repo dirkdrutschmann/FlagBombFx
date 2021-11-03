@@ -7,16 +7,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Grid {
-    private class IndexValues {
-        public int column;
-        public int row;
-
-        public IndexValues(int column, int row)
-        {
-            this.column = column;
-            this.row = row;
-        }
-    }
 
     public List<List<Tile>> columns = new ArrayList();
     public int columnCount;
@@ -77,7 +67,7 @@ public class Grid {
         return null;
     }
 
-    private IndexValues getIndexValue(Tile tile)
+    public IndexValues getIndexValue(Tile tile)
     {
         for(int i = 0; i < this.columnCount; i++)
         {

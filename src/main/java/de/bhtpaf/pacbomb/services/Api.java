@@ -130,6 +130,37 @@ public class Api {
         return  loggedInUser;
     }
 
+    public String getUserImage(User user)
+    {
+        String path = _apiUrl + "/User/" + user.id + "/picture";
+
+        HttpGet httpGet = new HttpGet(path);
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        String pictureBase64 = null;
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(httpGet);
+            HttpEntity responseEntity = response.getEntity();
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                pictureBase64 = _getStringFromInputStream(responseEntity.getContent());
+            }
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return pictureBase64;
+    }
+
     public boolean existsMail(String mail)
     {
         return _getBooleanGetRequest(_apiUrl + "/register/mail/" + mail);

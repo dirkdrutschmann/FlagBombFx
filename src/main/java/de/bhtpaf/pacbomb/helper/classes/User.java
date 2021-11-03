@@ -29,6 +29,8 @@ public class User
 
     public JWT jwtToken;
 
+    public String userImageBase64;
+
     public User()
     { }
 
