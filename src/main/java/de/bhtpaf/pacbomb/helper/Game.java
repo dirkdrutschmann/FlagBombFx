@@ -26,8 +26,8 @@ import java.util.*;
 public class Game
 {
 
-    private Scene _previousScene;
-    private Stage _mainStage;
+    private final Scene _previousScene;
+    private final Stage _mainStage;
     private User _user = null;
 
     private int speed = 300;

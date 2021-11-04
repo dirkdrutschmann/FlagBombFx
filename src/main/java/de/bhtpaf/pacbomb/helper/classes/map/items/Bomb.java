@@ -6,16 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 // Stellt eine Bombe dar
-public class Bomb
+public class Bomb extends Item
 {
     // Bombenstatus
     private int _state = 0;
 
-    // Quadrat der Bombe
-    public Square square;
-
     public Bomb(Square square) {
-        this.square = square;
+        super(square.downLeft.x, square.downLeft.y, square.downRight.x - square.downLeft.x);
     }
 
     public void setState(int state)
