@@ -3,15 +3,14 @@ package de.bhtpaf.pacbomb.helper;
 import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.classes.map.*;
-import de.bhtpaf.pacbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bombs;
+import de.bhtpaf.pacbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Food;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
@@ -35,11 +34,9 @@ public class Game
     private int width = 1000;
     private int height = width;
 
-    private int boomFactor = 2;
     private int squareFactor = 30;
     private int step = 1;
     private int bomberManSize = width / squareFactor;
-    private int bombSize = width / squareFactor;
     private int foodSize = width / squareFactor;
     private Grid _grid;
 
@@ -50,29 +47,17 @@ public class Game
     private int fontSizeTop = 20;
 
     //Creating an image
-    private Image pacMan = new Image(PacBomb.class.getResourceAsStream("bomberman.gif"));
 
-    private Image[] bombImages = new Image[]
-    {
-        new Image(PacBomb.class.getResourceAsStream("bomb1.gif")),
-        new Image(PacBomb.class.getResourceAsStream("bomb2.gif")),
-        new Image(PacBomb.class.getResourceAsStream("bomb3.gif")),
-        new Image(PacBomb.class.getResourceAsStream("bomb4.gif")),
-        new Image(PacBomb.class.getResourceAsStream("bomb5.gif")),
-        new Image(PacBomb.class.getResourceAsStream("bomb6.gif"))
-    };
 
-    private Media soundBoom = new Media(PacBomb.class.getResource("boom.mp3").toString());
     private Media soundCollect = new Media(PacBomb.class.getResource("collect.wav").toString());
     private Media backgroundMusic = new Media(PacBomb.class.getResource("sound.wav").toString());
     private Media gameOverMusic = new Media(PacBomb.class.getResource("gameover.wav").toString());
     private Media errorMusic = new Media(PacBomb.class.getResource("empty.wav").toString());
     private MediaPlayer backgroundPlayer = new MediaPlayer(backgroundMusic);
-    private BomberMan bomberMan = null;
+    private BomberMan _bomberMan = null;
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
-    private boolean bombIt = false;
-    private Bombs _bombList = new Bombs();
+    private Bombs _bombList;
     private List<Food> foodList = new ArrayList();
     
     public Game(Stage stage, User user)
@@ -87,7 +72,20 @@ public class Game
             _grid.generateMap();
 
             bomberManSize = squareFactor;
-            bomberMan = new BomberMan(0, squareFactor, bomberManSize);
+
+            _bomberMan = new BomberMan(
+                0,
+                squareFactor,
+                bomberManSize,
+                new Flag(
+                    _grid.columns.get(18).get(1).downLeft.x,
+                    _grid.columns.get(18).get(1).downLeft.y,
+                    bomberManSize,
+                    Flag.Color.blue
+                )
+            );
+
+            _bombList = new Bombs(width / squareFactor);
 
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
@@ -125,6 +123,12 @@ public class Game
                         String string = "GAME OVER";
                         double factor = string.length() * fontSizeTop * 0.5;
                         gc.fillText(string, height / 2 - factor, width / 2);
+
+                        if (backgroundPlayer.getStatus() == MediaPlayer.Status.PLAYING)
+                        {
+                            backgroundPlayer.stop();
+                        }
+
                         gameOverPlayer.play();
 
                         // Back to Overview in 5 Seconds
@@ -199,9 +203,14 @@ public class Game
 
     private void _tick(GraphicsContext gc)
     {
-        if (!_grid.hit(bomberMan.square, _direction))
+        if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING)
         {
-            bomberMan.doStep(_direction, step);
+            backgroundPlayer.play();
+        }
+
+        if (!_grid.hit(_bomberMan.square, _direction))
+        {
+            _bomberMan.doStep(_direction, step);
         }
 
         // fill
@@ -225,62 +234,17 @@ public class Game
         double factor = string.length() * fontSizeTop * 0.5;
         gc.fillText(string, width-factor, 20) ;
 
+        _bomberMan.draw(gc);
+        _bomberMan.getOwnedFlag().draw(gc);
 
-        gc.drawImage(pacMan, bomberMan.square.downLeft.x, bomberMan.square.downLeft.y, bomberManSize, bomberManSize);
-        // gc.setFill(Color.BLUE);
-        // gc.fillRect(bomberMan.coord.x, bomberMan.coord.y, bomberManSize, grid.columns.get(0).get(0).downLeft.y);
-
-        Iterator<Bomb> iterBomb = _bombList.iterator();
-
-        while (iterBomb.hasNext())
-        {
-            Bomb b = iterBomb.next();
-            int bombState = b.getState();
-            if (bombState == 60)
-            {
-                iterBomb.remove();
-                return;
-            }
-            else if (bombState >= 50)
-            {
-                gc.drawImage(bombImages[bombState / 10], b.square.downLeft.x - (boomFactor * bombSize)/4, b.square.downLeft.y - (boomFactor * bombSize)/4, boomFactor * bombSize, boomFactor * bombSize);
-                b.setState(++bombState);
-            }
-            else
-            {
-                gc.drawImage(bombImages[bombState / 10], b.square.downLeft.x, b.square.downLeft.y, bombSize, bombSize);
-                b.setState(++bombState);
-
-            }
-
-            // Bombe explodiert
-            if (b.getState() == 52) {
-                MediaPlayer boomPlayer = new MediaPlayer(soundBoom);
-                boomPlayer.play();
-
-                List<ExtendedTile> infected = b.getInfectedTiles(_grid);
-
-                for (ExtendedTile field : infected)
-                {
-                    if (field.tile() instanceof Wall && ((Wall)field.tile()).isDestroyable)
-                    {
-                        Tile freeTile = new Tile(field.tile().downLeft, field.tile().width, Type.free);
-                        freeTile.draw(gc);
-
-                        _grid.columns.get(field.index().column).set(field.index().row, freeTile);
-                    }
-                }
-
-
-            }
-        }
+        _bombList.updateBombs(gc, _grid);
 
         for (int i = 0; i < foodList.size(); i++)
         {
             Food f = foodList.get(i);
 
             Tile food = _grid.find(f.getMiddleCoord());
-            Tile bm = _grid.find(bomberMan.getMiddleCoord());
+            Tile bm = _grid.find(_bomberMan.getMiddleCoord());
 
             if(food.compare(bm))
             {
@@ -292,18 +256,18 @@ public class Game
             }
             else
             {
-                gc.setFill(f.color);
-                gc.fillOval(f.square.downLeft.x , f.square.downLeft.y , f.foodSize, f.foodSize);
+                f.draw(gc);
             }
         }
 
         Random rand = new Random();
 
-        if(foodList.size() < 3)
+        if (foodList.size() < 5)
         {
-            for (int i = 0; i < 1 + rand.nextInt(5 - foodList.size()); i++)
+            for (int i = 0; i < 1 + rand.nextInt(6 - foodList.size()); i++)
             {
                 foodList.add(Food.getRandom(_grid));
+                foodList.get(foodList.size() - 1).draw(gc);
             }
         }
 
@@ -313,8 +277,8 @@ public class Game
     {
         if(bombs > 0)
         {
-            int x = (bomberMan.square.downLeft.x + bomberMan.square.downRight.x) / 2;
-            int y = (bomberMan.square.upperLeft.y + bomberMan.square.downLeft.y) / 2;
+            int x = (_bomberMan.square.downLeft.x + _bomberMan.square.downRight.x) / 2;
+            int y = (_bomberMan.square.upperLeft.y + _bomberMan.square.downLeft.y) / 2;
 
             if (_bombList.placeOnGrid(_grid, x, y) > 0)
             {

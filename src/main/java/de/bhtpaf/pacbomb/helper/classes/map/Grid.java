@@ -232,7 +232,7 @@ public class Grid {
                     || i == this.columnCount - 1
                     || k == 0
                     || k == this.rowCount - 1
-                    || (k == 17 && (i == 1 || i == 2 || i == columnCount - 1 || i == columnCount - 2))
+                    || (k == 17 && (i == 1 || i == 2 || i == columnCount - 2 || i == columnCount - 3))
                 )
                 {
                     row.add(

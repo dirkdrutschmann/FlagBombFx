@@ -1,6 +1,7 @@
 package de.bhtpaf.pacbomb.helper.classes.map.items;
 
 import de.bhtpaf.pacbomb.helper.classes.map.*;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import java.util.Random;
 
@@ -73,6 +74,13 @@ public class Food extends Item
         }
 
         return new Food(tile.downLeft.x, tile.downLeft.y, tile.width, color);
+    }
+
+    @Override
+    public void draw(GraphicsContext gc)
+    {
+        gc.setFill(color);
+        gc.fillOval(square.downLeft.x , square.downLeft.y , foodSize, foodSize);
     }
 }
 

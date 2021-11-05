@@ -1,6 +1,8 @@
 package de.bhtpaf.pacbomb.helper.classes.map.items;
 
 import de.bhtpaf.pacbomb.helper.classes.map.*;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,21 +10,60 @@ import java.util.List;
 // Stellt eine Bombe dar
 public class Bomb extends Item
 {
+    private final Image[] _stateImage;
+
+    // Anzahl Bilder
+    private final int _totalStates = 6;
+
+    private final int _bombSize = square.downRight.x - square.downLeft.x;
+
+    private final int _boomFactor = 2;
+
+    // Millisekunden bis Bombe explodiert
+    private final long _bombTime = 1750;
+
     // Bombenstatus
     private int _state = 0;
 
-    public Bomb(Square square) {
+    public Bomb(Square square, Image[] stateImages)
+    {
         super(square.downLeft.x, square.downLeft.y, square.downRight.x - square.downLeft.x);
+        _stateImage = stateImages;
+
+        _startBombTimer(_bombTime);
     }
 
-    public void setState(int state)
+    public Bomb(Square square, Image[] stateImages, long bombTime)
     {
-        _state = state;
+        super(square.downLeft.x, square.downLeft.y, square.downRight.x - square.downLeft.x);
+        _stateImage = stateImages;
+
+        _startBombTimer(bombTime);
     }
 
     public int getState()
     {
         return _state;
+    }
+
+    private void _startBombTimer(long explodesInMilliSeconds)
+    {
+        new Thread(() -> {
+            long waitTime = explodesInMilliSeconds / _totalStates;
+
+            for (int i = 0; i <= _totalStates; i++)
+            {
+                _state = i;
+                try
+                {
+                    Thread.sleep(waitTime);
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     public List<ExtendedTile> getInfectedTiles(Grid grid)
@@ -116,5 +157,18 @@ public class Bomb extends Item
         }
 
         return infectedTiles;
+    }
+
+    @Override
+    public void draw(GraphicsContext gc)
+    {
+        if (_state >= 5)
+        {
+            gc.drawImage(_stateImage[_state], square.downLeft.x - (_boomFactor * _bombSize)/4, square.downLeft.y - (_boomFactor * _bombSize)/4, _boomFactor * _bombSize, _boomFactor * _bombSize);
+        }
+        else
+        {
+            gc.drawImage(_stateImage[_state], square.downLeft.x, square.downLeft.y, _bombSize, _bombSize);
+        }
     }
 }

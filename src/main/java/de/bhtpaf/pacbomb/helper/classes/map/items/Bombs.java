@@ -1,15 +1,76 @@
 package de.bhtpaf.pacbomb.helper.classes.map.items;
 
-import de.bhtpaf.pacbomb.helper.classes.map.Coord;
-import de.bhtpaf.pacbomb.helper.classes.map.Grid;
-import de.bhtpaf.pacbomb.helper.classes.map.Square;
+import de.bhtpaf.pacbomb.PacBomb;
+import de.bhtpaf.pacbomb.helper.classes.map.*;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 import java.util.*;
 
 public class Bombs implements Collection<Bomb>
 {
-    List<Bomb> _bombs = new ArrayList<>();
+    private final Image[] _bombImages = new Image[]
+    {
+            new Image(PacBomb.class.getResourceAsStream("bomb1.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb2.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb3.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb4.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb5.gif")),
+            new Image(PacBomb.class.getResourceAsStream("bomb6.gif"))
+    };
+
+    private final Media _soundBoom = new Media(PacBomb.class.getResource("boom.mp3").toString());
+    private final int _bombSize;
+    private final int _boomFactor = 2;
+
+    private List<Bomb> _bombs = new ArrayList<>();
+
+    public Bombs (int bombSize)
+    {
+        _bombSize = bombSize;
+    }
+
+    public void updateBombs(GraphicsContext gc, Grid grid)
+    {
+        for (int i = 0; i < _bombs.size(); i++)
+        {
+            Bomb bomb = _bombs.get(i);
+            int bombState = bomb.getState();
+
+            // Bombe entfernen
+            if (bombState == 6)
+            {
+                _bombs.remove(i);
+                return;
+            }
+            else
+            {
+                bomb.draw(gc);
+            }
+
+
+            // Bombe explodiert
+            if (bombState == 5) {
+                MediaPlayer boomPlayer = new MediaPlayer(_soundBoom);
+                boomPlayer.play();
+
+                List<ExtendedTile> infected = bomb.getInfectedTiles(grid);
+
+                for (ExtendedTile field : infected)
+                {
+                    if (field.tile() instanceof Wall && ((Wall)field.tile()).isDestroyable)
+                    {
+                        Tile freeTile = new Tile(field.tile().downLeft, field.tile().width, Type.free);
+                        freeTile.draw(gc);
+
+                        grid.columns.get(field.index().column).set(field.index().row, freeTile);
+                    }
+                }
+            }
+        }
+    }
 
     public int placeOnGrid(Grid grid, int x, int y)
     {
@@ -17,7 +78,7 @@ public class Bombs implements Collection<Bomb>
 
         if (pos != null)
         {
-            _bombs.add(new Bomb(pos));
+            _bombs.add(new Bomb(pos, _bombImages));
             return size();
         }
 
