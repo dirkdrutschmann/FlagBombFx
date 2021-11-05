@@ -22,7 +22,14 @@ public enum Type {
 
     public static Type random()
     {
-        return VALUES.get(RANDOM.nextInt(SIZE));
+        Type t = VALUES.get(RANDOM.nextInt(SIZE));
+
+        if (t == free && RANDOM.nextInt(500) % 2 == 0)
+        {
+            return wall;
+        }
+
+        return t;
     }
 
     public static void draw(GraphicsContext gc, Tile tile)

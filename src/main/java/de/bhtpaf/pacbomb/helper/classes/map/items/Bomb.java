@@ -33,9 +33,12 @@ public class Bomb extends Item
 
         Tile temp;
 
+        boolean left = false, right = false, top = false, down = false;
+
         // links
         if (indexes.column > 0)
         {
+            left = true;
             temp = grid.columns.get(indexes.column - 1).get(indexes.row);
 
             infectedTiles.add(
@@ -46,6 +49,7 @@ public class Bomb extends Item
         // rechts
         if (indexes.column < grid.columnCount - 1)
         {
+            right = true;
             temp = grid.columns.get(indexes.column + 1).get(indexes.row);
 
             infectedTiles.add(
@@ -56,6 +60,7 @@ public class Bomb extends Item
         // oben
         if (indexes.row > 0)
         {
+            top = true;
             temp = grid.columns.get(indexes.column).get(indexes.row - 1);
 
             infectedTiles.add(
@@ -66,10 +71,47 @@ public class Bomb extends Item
         // unten
         if (indexes.row < grid.rowCount - 1)
         {
+            down = true;
             temp = grid.columns.get(indexes.column).get(indexes.row + 1);
 
             infectedTiles.add(
                 new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row + 1))
+            );
+        }
+
+        if (top && left)
+        {
+            temp = grid.columns.get(indexes.column - 1).get(indexes.row - 1);
+
+            infectedTiles.add(
+              new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row - 1))
+            );
+        }
+
+        if (top && right)
+        {
+            temp = grid.columns.get(indexes.column + 1).get(indexes.row - 1);
+
+            infectedTiles.add(
+                    new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row - 1))
+            );
+        }
+
+        if (down && left)
+        {
+            temp = grid.columns.get(indexes.column - 1).get(indexes.row + 1);
+
+            infectedTiles.add(
+                    new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row + 1))
+            );
+        }
+
+        if (down && right)
+        {
+            temp = grid.columns.get(indexes.column + 1).get(indexes.row + 1);
+
+            infectedTiles.add(
+                    new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row + 1))
             );
         }
 

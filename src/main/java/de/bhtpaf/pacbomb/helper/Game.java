@@ -41,7 +41,7 @@ public class Game
     private int bomberManSize = width / squareFactor;
     private int bombSize = width / squareFactor;
     private int foodSize = width / squareFactor;
-    private Grid grid = new Grid (width, height, squareFactor);
+    private Grid _grid;
 
     private Dir _direction = Dir.right;
     private List<Dir> _forbiddenDirection = new ArrayList();
@@ -83,6 +83,9 @@ public class Game
 
         try
         {
+            _grid = new Grid (width, height, squareFactor);
+            _grid.generateMap();
+
             bomberManSize = squareFactor;
             bomberMan = new BomberMan(0, squareFactor, bomberManSize);
 
@@ -196,7 +199,7 @@ public class Game
 
     private void _tick(GraphicsContext gc)
     {
-        if (!grid.hit(bomberMan.square, _direction))
+        if (!_grid.hit(bomberMan.square, _direction))
         {
             bomberMan.doStep(_direction, step);
         }
@@ -206,7 +209,7 @@ public class Game
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, width , height );
 
-        grid.draw(gc);
+        _grid.draw(gc);
 
         // score
         gc.setFill(Color.WHITE);
@@ -255,7 +258,7 @@ public class Game
                 MediaPlayer boomPlayer = new MediaPlayer(soundBoom);
                 boomPlayer.play();
 
-                List<ExtendedTile> infected = b.getInfectedTiles(grid);
+                List<ExtendedTile> infected = b.getInfectedTiles(_grid);
 
                 for (ExtendedTile field : infected)
                 {
@@ -264,7 +267,7 @@ public class Game
                         Tile freeTile = new Tile(field.tile().downLeft, field.tile().width, Type.free);
                         freeTile.draw(gc);
 
-                        grid.columns.get(field.index().column).set(field.index().row, freeTile);
+                        _grid.columns.get(field.index().column).set(field.index().row, freeTile);
                     }
                 }
 
@@ -276,8 +279,8 @@ public class Game
         {
             Food f = foodList.get(i);
 
-            Tile food = grid.find(f.getMiddleCoord());
-            Tile bm = grid.find(bomberMan.getMiddleCoord());
+            Tile food = _grid.find(f.getMiddleCoord());
+            Tile bm = _grid.find(bomberMan.getMiddleCoord());
 
             if(food.compare(bm))
             {
@@ -300,7 +303,7 @@ public class Game
         {
             for (int i = 0; i < 1 + rand.nextInt(5 - foodList.size()); i++)
             {
-                foodList.add(Food.getRandom(grid));
+                foodList.add(Food.getRandom(_grid));
             }
         }
 
@@ -313,7 +316,7 @@ public class Game
             int x = (bomberMan.square.downLeft.x + bomberMan.square.downRight.x) / 2;
             int y = (bomberMan.square.upperLeft.y + bomberMan.square.downLeft.y) / 2;
 
-            if (_bombList.placeOnGrid(grid, x, y) > 0)
+            if (_bombList.placeOnGrid(_grid, x, y) > 0)
             {
                 bombs--;
             }

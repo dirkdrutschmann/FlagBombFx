@@ -9,6 +9,8 @@ import java.util.Random;
 
 public class Grid {
 
+    private final int squareFactor;
+
     public List<List<Tile>> columns = new ArrayList();
     public int columnCount;
     public int rowCount;
@@ -17,43 +19,7 @@ public class Grid {
     {
         this.columnCount = width / squareFactor;
         this.rowCount = (height - 20) / squareFactor;
-
-        Random rand = new Random();
-
-        List<Tile> row;
-
-        for (int i = 0; i < this.columnCount; i++)
-        {
-            row = new ArrayList();
-
-            for (int k = 0; k < this.rowCount; k++)
-            {
-                Type t = Type.random();
-
-                if (t == Type.wall)
-                {
-                    row.add(
-                        new Wall(
-                            new Coord(i * squareFactor, (k + 1) * squareFactor),
-                            squareFactor,
-                            rand.nextInt(500) %  2 == 0
-                        )
-                    );
-                }
-                else
-                {
-                    row.add(
-                        new Tile(
-                            new Coord(i * squareFactor, (k + 1) * squareFactor),
-                            squareFactor,
-                            t
-                        )
-                    );
-                }
-            }
-
-            columns.add(row);
-        }
+        this.squareFactor = squareFactor;
     }
 
     public void draw (GraphicsContext gc)
@@ -163,7 +129,7 @@ public class Grid {
                     return true;
                 }
 
-                if (indexesMiddle.row < rowCount)
+                if (indexesMiddle.row + 1 < rowCount)
                 {
                     refTile = columns.get(indexesMiddle.column).get(indexesMiddle.row + 1);
                 }
@@ -193,7 +159,7 @@ public class Grid {
                     return true;
                 }
 
-                if (indexesMiddle.column < columnCount)
+                if (indexesMiddle.column + 1 < columnCount)
                 {
                     refTile = columns.get(indexesMiddle.column + 1).get(indexesMiddle.row);
                 }
@@ -248,4 +214,80 @@ public class Grid {
         return false;
     }
 
+    public void generateMap()
+    {
+        Random rand = new Random();
+        List<Tile> row;
+        for (int i = 0; i < this.columnCount; i++)
+        {
+            row = new ArrayList();
+
+            for (int k = 0; k < this.rowCount; k++)
+            {
+
+                // Erste und letzte Spalte und erste und letzte Zeile immer frei
+                if
+                (
+                       i == 0
+                    || i == this.columnCount - 1
+                    || k == 0
+                    || k == this.rowCount - 1
+                    || (k == 17 && (i == 1 || i == 2 || i == columnCount - 1 || i == columnCount - 2))
+                )
+                {
+                    row.add(
+                        new Tile(
+                            new Coord(i * squareFactor, (k + 1) * squareFactor),
+                            squareFactor,
+                            Type.free
+                        )
+                    );
+                }
+
+                // Einrandung Flagge
+                else if
+                (
+                       (k == 16 || k == 18) && (i == 1 || i == 2 || i == 3 || i == columnCount - 2 || i == columnCount - 3 || i == columnCount - 4)
+                    || (k == 17 && (i == 3 || i == columnCount - 4))
+                )
+                {
+                    row.add(
+                        new Wall(
+                            new Coord(i * squareFactor, (k + 1) * squareFactor),
+                            squareFactor,
+                            false
+                        )
+                    );
+                }
+                // Rest zufällig
+                else
+                {
+                    Type t = Type.random();
+
+                    if (t == Type.wall)
+                    {
+                        row.add(
+                            new Wall(
+                                new Coord(i * squareFactor, (k + 1) * squareFactor),
+                                squareFactor,
+                                rand.nextInt(500) %  2 == 0
+                            )
+                        );
+                    }
+                    else
+                    {
+                        row.add(
+                            new Tile(
+                                new Coord(i * squareFactor, (k + 1) * squareFactor),
+                                squareFactor,
+                                t
+                            )
+                        );
+                    }
+                }
+            }
+
+            columns.add(row);
+        }
+    }
 }
