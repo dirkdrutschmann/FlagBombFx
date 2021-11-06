@@ -48,21 +48,21 @@ public class BomberMan extends Item
         this.square.upperRight.y += inc;
     }
 
-    public void doStep(Dir direction, int step)
+    public void doStep(Dir direction)
     {
         switch (direction)
         {
             case up:
-                addY(-step);
+                addY(-1);
                 break;
             case down:
-                addY(step);
+                addY(1);
                 break;
             case left:
-                addX(-step);
+                addX(-1);
                 break;
             case right:
-                addX(step);
+                addX(1);
                 break;
         }
     }

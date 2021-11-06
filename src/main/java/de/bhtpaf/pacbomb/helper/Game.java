@@ -29,25 +29,20 @@ public class Game
     private final Stage _mainStage;
     private User _user = null;
 
-    private int speed = 300;
-    private int bombs = 10;
-    private int width = 1000;
-    private int height = width;
+    private final int _speed;
+    private final int fontSizeTop = 20;
+    private final int _width;
+    private final int _height;
 
-    private int squareFactor = 30;
-    private int step = 1;
-    private int bomberManSize = width / squareFactor;
-    private int foodSize = width / squareFactor;
+    private int _squareFactor;
+    private int _bomberManSize;
+    private int _bombs;
+
     private Grid _grid;
 
     private Dir _direction = Dir.right;
-    private List<Dir> _forbiddenDirection = new ArrayList();
 
     private boolean gameOver = false;
-    private int fontSizeTop = 20;
-
-    //Creating an image
-
 
     private Media soundCollect = new Media(PacBomb.class.getResource("collect.wav").toString());
     private Media backgroundMusic = new Media(PacBomb.class.getResource("sound.wav").toString());
@@ -60,38 +55,46 @@ public class Game
     private Bombs _bombList;
     private List<Food> foodList = new ArrayList();
     
-    public Game(Stage stage, User user)
+    public Game(Stage stage, User user, int speed, int width, int squareFactor, int bombs)
     {
         _previousScene = stage.getScene();
         _mainStage = stage;
         _user = user;
 
+        _speed = speed;
+        _width = width;
+        _squareFactor = squareFactor;
+        _bombs = bombs;
+
+        _height = _width;
+        _bomberManSize = _width / _squareFactor;
+
         try
         {
-            _grid = new Grid (width, height, squareFactor);
+            _grid = new Grid (_width, _height, _squareFactor);
             _grid.generateMap();
 
-            bomberManSize = squareFactor;
+            _bomberManSize = _squareFactor;
 
             _bomberMan = new BomberMan(
                 0,
-                squareFactor,
-                bomberManSize,
+                    _squareFactor,
+                    _bomberManSize,
                 new Flag(
-                    _grid.columns.get(18).get(1).downLeft.x,
-                    _grid.columns.get(18).get(1).downLeft.y,
-                    bomberManSize,
+                    _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
+                    _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
+                    _bomberManSize,
                     Flag.Color.blue
                 )
             );
 
-            _bombList = new Bombs(width / squareFactor);
+            _bombList = new Bombs(_width / _squareFactor);
 
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
             backgroundPlayer.play();
             VBox root = new VBox();
-            Canvas c = new Canvas(width , height);
+            Canvas c = new Canvas(_width, _height);
             GraphicsContext gc = c.getGraphicsContext2D();
             root.getChildren().add(c);
 
@@ -108,7 +111,7 @@ public class Game
                         return;
                     }
 
-                    if (now - lastTick > 1000000000 / speed)
+                    if (now - lastTick > 1000000000 / _speed)
                     {
                         lastTick = now;
                         _tick(gc);
@@ -122,7 +125,7 @@ public class Game
                         gc.setFont(new Font("", 50));
                         String string = "GAME OVER";
                         double factor = string.length() * fontSizeTop * 0.5;
-                        gc.fillText(string, height / 2 - factor, width / 2);
+                        gc.fillText(string, _height / 2 - factor, _width / 2);
 
                         if (backgroundPlayer.getStatus() == MediaPlayer.Status.PLAYING)
                         {
@@ -153,24 +156,24 @@ public class Game
 
             }.start();
 
-            Scene scene = new Scene(root, width , height);
+            Scene scene = new Scene(root, _width, _height);
 
             // control
             scene.addEventFilter(KeyEvent.KEY_PRESSED, key -> {
 
-                if (key.getCode() == KeyCode.UP && !_forbiddenDirection.contains(Dir.up))
+                if (key.getCode() == KeyCode.UP)
                 {
                     _direction = Dir.up;
                 }
-                else if (key.getCode() == KeyCode.LEFT && !_forbiddenDirection.contains(Dir.left))
+                else if (key.getCode() == KeyCode.LEFT)
                 {
                     _direction = Dir.left;
                 }
-                else if (key.getCode() == KeyCode.DOWN && !_forbiddenDirection.contains(Dir.down))
+                else if (key.getCode() == KeyCode.DOWN)
                 {
                     _direction = Dir.down;
                 }
-                else if (key.getCode() == KeyCode.RIGHT && !_forbiddenDirection.contains(Dir.right))
+                else if (key.getCode() == KeyCode.RIGHT)
                 {
                     _direction = Dir.right;
                 }
@@ -187,11 +190,11 @@ public class Game
             //If you do not want to use css style, you can just delete the next line.
             //  scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
-            _mainStage.setMinHeight(1039);
-            _mainStage.setMaxHeight(1039);
+            _mainStage.setMinHeight(_height + 39);
+            _mainStage.setMaxHeight(_height + 39);
 
-            _mainStage.setMinWidth(1016);
-            _mainStage.setMaxWidth(1016);
+            _mainStage.setMinWidth(_width + 16);
+            _mainStage.setMaxWidth(_width + 16);
 
             _mainStage.setScene(scene);
         }
@@ -210,20 +213,20 @@ public class Game
 
         if (!_grid.hit(_bomberMan.square, _direction))
         {
-            _bomberMan.doStep(_direction, step);
+            _bomberMan.doStep(_direction);
         }
 
         // fill
         // background
         gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, width , height );
+        gc.fillRect(0, 0, _width, _height);
 
         _grid.draw(gc);
 
         // score
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("", fontSizeTop));
-        gc.fillText("BOMBS: " + bombs, 10, 20);
+        gc.fillText("BOMBS: " + _bombs, 10, 20);
         //
         gc.setFill(Color.WHITE);
 
@@ -232,7 +235,7 @@ public class Game
         //TO DO DYNAMIC WIDTH
         String string = "Player 1: " + (_user != null ? _user.username : "Anonymous");
         double factor = string.length() * fontSizeTop * 0.5;
-        gc.fillText(string, width-factor, 20) ;
+        gc.fillText(string, _width -factor, 20) ;
 
         _bomberMan.draw(gc);
         _bomberMan.getOwnedFlag().draw(gc);
@@ -250,7 +253,7 @@ public class Game
             {
                 MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
                 collectPlayer.play();
-                bombs++;
+                _bombs++;
 
                 foodList.remove(f);
             }
@@ -275,14 +278,14 @@ public class Game
 
     private void _addBomb()
     {
-        if(bombs > 0)
+        if(_bombs > 0)
         {
             int x = (_bomberMan.square.downLeft.x + _bomberMan.square.downRight.x) / 2;
             int y = (_bomberMan.square.upperLeft.y + _bomberMan.square.downLeft.y) / 2;
 
             if (_bombList.placeOnGrid(_grid, x, y) > 0)
             {
-                bombs--;
+                _bombs--;
             }
         }
         else

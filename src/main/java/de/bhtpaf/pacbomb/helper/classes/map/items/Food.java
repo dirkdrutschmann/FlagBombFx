@@ -58,12 +58,15 @@ public class Food extends Item
             color = Color.WHITE;
         }
 
-        Tile tile;
+        Tile tile = grid.columns.get(grid.columnCount - 1).get(grid.rowCount - 1);
+
+        int xBound = tile.downLeft.x;
+        int yBound = tile.downLeft.y;
 
         while (true)
         {
-            int x = rand.nextInt(950);
-            int y = rand.nextInt(950);
+            int x = rand.nextInt(xBound);
+            int y = rand.nextInt(yBound);
 
             tile = grid.find(new Coord(x, y));
 

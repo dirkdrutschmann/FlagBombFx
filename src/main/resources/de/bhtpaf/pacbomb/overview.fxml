@@ -20,6 +20,18 @@
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
           <SplitPane dividerPositions="0.7" prefHeight="540.0" prefWidth="1000.0">
               <AnchorPane maxWidth="700.0" minHeight="0.0" minWidth="700.0" prefHeight="160.0" prefWidth="700.0">
+                  <Label layoutX="82.0" layoutY="62.0" text="Geschwindigkeit:" />
+                  <TextField fx:id="edt_game_speed" layoutX="200.0" layoutY="58.0" />
+
+                  <Label layoutX="82.0" layoutY="97.0" text="Bomben zu Beginn:" />
+                  <TextField fx:id="edt_game_bombs" layoutX="201.0" layoutY="93.0" />
+
+                  <Label layoutX="82.0" layoutY="134.0" text="Spielfeldbreite" />
+                  <TextField fx:id="edt_game_width" layoutX="201.0" layoutY="130.0" />
+
+                  <Label layoutX="82.0" layoutY="170.0" text="Kachelgröße" />
+                  <TextField fx:id="edt_game_squareFactor" layoutX="201.0" layoutY="166.0" />
+
                   <Button layoutX="303.0" layoutY="257.0" mnemonicParsing="false" onAction="#startGame" prefHeight="25.0" prefWidth="90.0" text="Spiel starten" />
               </AnchorPane>
               <AnchorPane maxWidth="300.0" minHeight="0.0" minWidth="300.0" prefHeight="160.0" prefWidth="300.0">

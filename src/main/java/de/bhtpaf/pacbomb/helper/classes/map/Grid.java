@@ -232,7 +232,7 @@ public class Grid {
                     || i == this.columnCount - 1
                     || k == 0
                     || k == this.rowCount - 1
-                    || (k == 17 && (i == 1 || i == 2 || i == columnCount - 2 || i == columnCount - 3))
+                    || (k == rowCount / 2 && (i == 1 || i == 2 || i == columnCount - 2 || i == columnCount - 3))
                 )
                 {
                     row.add(
@@ -247,8 +247,8 @@ public class Grid {
                 // Einrandung Flagge
                 else if
                 (
-                       (k == 16 || k == 18) && (i == 1 || i == 2 || i == 3 || i == columnCount - 2 || i == columnCount - 3 || i == columnCount - 4)
-                    || (k == 17 && (i == 3 || i == columnCount - 4))
+                       (k == (rowCount / 2) - 1 || k == (rowCount / 2) + 1 && (i == 1 || i == 2 || i == 3 || i == columnCount - 2 || i == columnCount - 3 || i == columnCount - 4))
+                    || (k == rowCount / 2 && (i == 3 || i == columnCount - 4))
                 )
                 {
                     row.add(
