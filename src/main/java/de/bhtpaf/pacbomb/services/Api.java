@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.bhtpaf.pacbomb.helper.classes.JWT;
 import de.bhtpaf.pacbomb.helper.classes.User;
+import de.bhtpaf.pacbomb.helper.classes.map.Grid;
+import de.bhtpaf.pacbomb.helper.requests.HttpGetWithEntity;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -169,6 +171,42 @@ public class Api {
     public boolean existsUsername(String username)
     {
         return _getBooleanGetRequest(_apiUrl + "/register/user/" + username);
+    }
+
+    public Grid getGrid(Grid initData, User user)
+    {
+        Grid grid = initData;
+        String path = _apiUrl + "/Map";
+
+        HttpGetWithEntity httpGet = new HttpGetWithEntity(path);
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        StringEntity entity = new StringEntity(grid.toJson(), ContentType.APPLICATION_JSON);
+        httpGet.setEntity(entity);
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(httpGet);
+            HttpEntity responseEntity = response.getEntity();
+
+            System.out.println("getGrid: " + response.getStatusLine());
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                String result = _getStringFromInputStream(responseEntity.getContent());
+                grid = Grid.getFromJson(result);
+            }
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return grid;
     }
 
     private String _getStringFromInputStream(InputStream inputStream)

@@ -1,24 +1,36 @@
 package de.bhtpaf.pacbomb.helper.classes.map;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
 import de.bhtpaf.pacbomb.helper.Dir;
+import de.bhtpaf.pacbomb.helper.classes.json.JsonDeserializerWithInheritance;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class Grid {
 
-    private final int squareFactor;
+    public int squareFactor;
+    public int height;
+    public int width;
 
     public List<List<Tile>> columns = new ArrayList();
     public int columnCount;
     public int rowCount;
 
+    public Grid ()
+    {}
+
     public Grid(int width, int height, int squareFactor)
     {
         this.columnCount = width / squareFactor;
         this.rowCount = (height - 20) / squareFactor;
+
+        this.width = width;
+        this.height = height;
         this.squareFactor = squareFactor;
     }
 
@@ -239,7 +251,7 @@ public class Grid {
                         new Tile(
                             new Coord(i * squareFactor, (k + 1) * squareFactor),
                             squareFactor,
-                            Type.free
+                            Type.FREE
                         )
                     );
                 }
@@ -264,7 +276,7 @@ public class Grid {
                 {
                     Type t = Type.random();
 
-                    if (t == Type.wall)
+                    if (t == Type.WALL)
                     {
                         row.add(
                             new Wall(
@@ -289,5 +301,15 @@ public class Grid {
 
             columns.add(row);
         }
+    }
+
+    public String toJson()
+    {
+        return new Gson().toJson(this);
+    }
+
+    public static Grid getFromJson(String json)
+    {
+        return new GsonBuilder().registerTypeAdapter(Tile.class, new JsonDeserializerWithInheritance<Tile>()).create().fromJson(json, Grid.class);
     }
 }

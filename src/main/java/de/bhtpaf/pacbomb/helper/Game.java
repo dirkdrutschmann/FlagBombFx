@@ -6,6 +6,7 @@ import de.bhtpaf.pacbomb.helper.classes.map.*;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Food;
+import de.bhtpaf.pacbomb.services.Api;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -27,6 +28,9 @@ public class Game
 
     private final Scene _previousScene;
     private final Stage _mainStage;
+    private final Api _api;
+
+    private Scene _gameScene = null;
     private User _user = null;
 
     private final int _speed;
@@ -38,7 +42,7 @@ public class Game
     private int _bomberManSize;
     private int _bombs;
 
-    private Grid _grid;
+    private Grid _grid = null;
 
     private Dir _direction = Dir.right;
 
@@ -55,8 +59,9 @@ public class Game
     private Bombs _bombList;
     private List<Food> foodList = new ArrayList();
     
-    public Game(Stage stage, User user, int speed, int width, int squareFactor, int bombs)
+    public Game(Api api, Stage stage, User user, int speed, int width, int squareFactor, int bombs)
     {
+        _api = api;
         _previousScene = stage.getScene();
         _mainStage = stage;
         _user = user;
@@ -68,18 +73,21 @@ public class Game
 
         _height = _width;
         _bomberManSize = _width / _squareFactor;
+    }
 
+    public void init()
+    {
         try
         {
             _grid = new Grid (_width, _height, _squareFactor);
-            _grid.generateMap();
+            _grid = _api.getGrid(_grid, _user);
 
             _bomberManSize = _squareFactor;
 
             _bomberMan = new BomberMan(
                 0,
-                    _squareFactor,
-                    _bomberManSize,
+                _squareFactor,
+                _bomberManSize,
                 new Flag(
                     _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
                     _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
@@ -156,10 +164,10 @@ public class Game
 
             }.start();
 
-            Scene scene = new Scene(root, _width, _height);
+            _gameScene = new Scene(root, _width, _height);
 
             // control
-            scene.addEventFilter(KeyEvent.KEY_PRESSED, key -> {
+            _gameScene.addEventFilter(KeyEvent.KEY_PRESSED, key -> {
 
                 if (key.getCode() == KeyCode.UP)
                 {
@@ -189,19 +197,43 @@ public class Game
 
             //If you do not want to use css style, you can just delete the next line.
             //  scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-
-            _mainStage.setMinHeight(_height + 39);
-            _mainStage.setMaxHeight(_height + 39);
-
-            _mainStage.setMinWidth(_width + 16);
-            _mainStage.setMaxWidth(_width + 16);
-
-            _mainStage.setScene(scene);
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+    }
+
+    public void generateGrid() throws Exception
+    {
+        if (_grid != null)
+        {
+            return;
+        }
+
+        if (_gameScene == null)
+        {
+            throw new Exception("Game nicht initialisiert");
+        }
+
+        _grid = new Grid (_width, _height, _squareFactor);
+        _grid = _api.getGrid(_grid, _user);
+    }
+
+    public void show() throws Exception
+    {
+        if (_grid == null)
+        {
+            throw new Exception("Grid wurde nicht generiert");
+        }
+
+        _mainStage.setMinHeight(_height + 39);
+        _mainStage.setMaxHeight(_height + 39);
+
+        _mainStage.setMinWidth(_width + 16);
+        _mainStage.setMaxWidth(_width + 16);
+
+        _mainStage.setScene(_gameScene);
     }
 
     private void _tick(GraphicsContext gc)

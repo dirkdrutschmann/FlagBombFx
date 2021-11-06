@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Random;
 
 public enum Type {
-    wall,
-    free;
+    WALL,
+    FREE;
 
     private static final List<Type> VALUES = List.of(values());
     private static final int SIZE = VALUES.size();
@@ -24,9 +24,9 @@ public enum Type {
     {
         Type t = VALUES.get(RANDOM.nextInt(SIZE));
 
-        if (t == free && RANDOM.nextInt(500) % 2 == 0)
+        if (t == FREE && RANDOM.nextInt(500) % 2 == 0)
         {
-            return wall;
+            return WALL;
         }
 
         return t;
@@ -35,7 +35,7 @@ public enum Type {
     public static void draw(GraphicsContext gc, Tile tile)
     {
         switch (tile.type) {
-            case wall:
+            case WALL:
                 if(((Wall)tile).isDestroyable)
                 {
                     gc.drawImage(wallImage, tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
@@ -46,7 +46,7 @@ public enum Type {
                 }
 
                 break;
-            case free:
+            case FREE:
                 //gc.drawImage(freeImage, tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);
                 gc.setFill(Color.web("0x629E5E"));
                 gc.fillRect(tile.downLeft.x + 1, tile.downLeft.y + 1, tile.width - 2, tile.width - 2);

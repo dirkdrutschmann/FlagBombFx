@@ -1,12 +1,15 @@
 package de.bhtpaf.pacbomb.controllers;
 
+import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.services.Api;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -47,6 +50,15 @@ public class OverviewController {
     @FXML
     public TextField edt_game_squareFactor;
 
+    @FXML
+    public Button bt_game_start;
+
+    @FXML
+    public ImageView img_loading;
+
+    @FXML
+    public Label lb_loading;
+
     public void logoutUser(ActionEvent event)
     {
         event.consume();
@@ -58,12 +70,61 @@ public class OverviewController {
     {
         event.consume();
 
+        bt_game_start.setDisable(true);
+        edt_game_speed.setDisable(true);
+        edt_game_bombs.setDisable(true);
+        edt_game_width.setDisable(true);
+        edt_game_squareFactor.setDisable(true);
+
+        if (img_loading.getImage() == null)
+        {
+            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("loading.gif")));
+        }
+
+        img_loading.setVisible(true);
+        lb_loading.setVisible(true);
+
         int speed = _getValue(edt_game_speed, _stdGameSpeed);
         int width = _getValue(edt_game_width, _stdGameWidth);
         int squareFactor = _getValue(edt_game_squareFactor, _stdGameSquareFactor);
         int bombs = _getValue(edt_game_bombs, _stdGameBombs);
 
-        new Game(_mainStage, _user, speed, width, squareFactor, bombs);
+        Game game = new Game(_api, _mainStage, _user, speed, width, squareFactor, bombs);
+
+        new Thread(() -> {
+            try
+            {
+                game.init();
+                game.generateGrid();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Platform.runLater(() -> {
+                    Util.showErrorMessageBox(e.getMessage());
+                });
+            }
+
+            Platform.runLater(() -> {
+                img_loading.setVisible(false);
+                lb_loading.setVisible(false);
+
+                bt_game_start.setDisable(false);
+                edt_game_speed.setDisable(false);
+                edt_game_bombs.setDisable(false);
+                edt_game_width.setDisable(false);
+                edt_game_squareFactor.setDisable(false);
+
+                try
+                {
+                    game.show();
+                }
+                catch (Exception e)
+                {
+                    Util.showErrorMessageBox(e.getMessage());
+                }
+            });
+        }).start();
     }
 
     public void setUser(User user)

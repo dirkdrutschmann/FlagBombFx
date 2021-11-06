@@ -62,7 +62,7 @@ public class Bombs implements Collection<Bomb>
                 {
                     if (field.tile() instanceof Wall && ((Wall)field.tile()).isDestroyable)
                     {
-                        Tile freeTile = new Tile(field.tile().downLeft, field.tile().width, Type.free);
+                        Tile freeTile = new Tile(field.tile().downLeft, field.tile().width, Type.FREE);
                         freeTile.draw(gc);
 
                         grid.columns.get(field.index().column).set(field.index().row, freeTile);

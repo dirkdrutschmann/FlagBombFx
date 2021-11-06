@@ -6,7 +6,7 @@ public class Wall extends Tile
 
     public Wall(Coord coord, int width, boolean isDestroyable)
     {
-        super(coord, width, Type.wall);
+        super(coord, width, Type.WALL);
         this.isDestroyable = isDestroyable;
     }
 }

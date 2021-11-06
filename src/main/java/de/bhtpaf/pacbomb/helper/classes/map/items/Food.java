@@ -70,7 +70,7 @@ public class Food extends Item
 
             tile = grid.find(new Coord(x, y));
 
-            if (tile.type != Type.wall)
+            if (tile.type != Type.WALL)
             {
                 break;
             }
