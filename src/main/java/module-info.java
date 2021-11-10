@@ -13,6 +13,7 @@ module de.bhtpaf.pacbomb {
     requires org.apache.httpcomponents.httpclient;
     requires org.apache.httpcomponents.httpcore;
     requires com.google.gson;
+    requires javax.websocket.client.api;
 
     exports de.bhtpaf.pacbomb;
     exports de.bhtpaf.pacbomb.controllers;

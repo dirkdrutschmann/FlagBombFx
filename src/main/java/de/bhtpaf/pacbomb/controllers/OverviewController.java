@@ -4,7 +4,9 @@ import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
+import de.bhtpaf.pacbomb.helper.interfaces.MessageHandler;
 import de.bhtpaf.pacbomb.services.Api;
+import de.bhtpaf.pacbomb.services.WebsocketClient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,6 +18,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+
+import java.net.URI;
 
 public class OverviewController {
 
@@ -69,6 +73,15 @@ public class OverviewController {
     public void startGame(ActionEvent event)
     {
         event.consume();
+
+        /*final WebsocketClient wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl()));
+
+        wsClient.addMessageHandler(new MessageHandler() {
+            @Override
+            public void handleMessage(String message) {
+                System.out.println(message);
+            }
+        });*/
 
         bt_game_start.setDisable(true);
         edt_game_speed.setDisable(true);

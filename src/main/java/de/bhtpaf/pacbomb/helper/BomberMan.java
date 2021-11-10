@@ -14,11 +14,14 @@ public class BomberMan extends Item
 
     private final Flag _ownedFlag;
 
-    public BomberMan(int x, int y, int width, Flag ownedFlag)
+    public final int id;
+
+    public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
     {
         super(x, y, width);
         _width = width;
         _ownedFlag = ownedFlag;
+        this.id = id;
     }
 
     @Override

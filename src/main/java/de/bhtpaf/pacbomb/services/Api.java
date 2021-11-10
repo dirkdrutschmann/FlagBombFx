@@ -19,6 +19,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.URI;
 
 public class Api {
     private String _apiUrl;
@@ -161,6 +162,17 @@ public class Api {
         }
 
         return pictureBase64;
+    }
+
+    public String getApiUrl()
+    {
+        return _apiUrl;
+    }
+
+    public String getWebSocketUrl()
+    {
+        URI uri = URI.create(_apiUrl);
+        return "ws://" + uri.getAuthority() + uri.getPath() + "/ws";
     }
 
     public boolean existsMail(String mail)

@@ -38,8 +38,8 @@ public class MainController {
 
     public MainController()
     {
-        _api = new Api("http://dirkdrutschmann.de:61338/api");
-        //_api = new Api("http://localhost:61339/api");
+        //_api = new Api("http://dirkdrutschmann.de:61338/api");
+        _api = new Api("http://localhost:61339/api");
     }
 
     @FXML

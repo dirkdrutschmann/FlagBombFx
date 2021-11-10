@@ -53,7 +53,7 @@ public class Game
     private Media gameOverMusic = new Media(PacBomb.class.getResource("gameover.wav").toString());
     private Media errorMusic = new Media(PacBomb.class.getResource("empty.wav").toString());
     private MediaPlayer backgroundPlayer = new MediaPlayer(backgroundMusic);
-    private BomberMan _bomberMan = null;
+    private List<BomberMan> _players = null;
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
     private Bombs _bombList;
@@ -84,15 +84,19 @@ public class Game
 
             _bomberManSize = _squareFactor;
 
-            _bomberMan = new BomberMan(
-                0,
-                _squareFactor,
-                _bomberManSize,
-                new Flag(
-                    _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
-                    _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
+            _players = new ArrayList<>();
+            _players.add(
+                new BomberMan(
+                    0,
+                    _squareFactor,
                     _bomberManSize,
-                    Flag.Color.blue
+                    new Flag(
+                        _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
+                        _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
+                        _bomberManSize,
+                        Flag.Color.blue
+                    ),
+                    _user.id
                 )
             );
 
@@ -187,7 +191,13 @@ public class Game
                 }
                 else if (key.getCode() == KeyCode.SPACE)
                 {
-                    _addBomb();
+                    for (BomberMan player: _players)
+                    {
+                        if (player.id == _user.id)
+                        {
+                            _addBomb(player);
+                        }
+                    }
                 }
                 else if (key.getCode() == KeyCode.ESCAPE)
                 {
@@ -243,9 +253,12 @@ public class Game
             backgroundPlayer.play();
         }
 
-        if (!_grid.hit(_bomberMan.square, _direction))
+        for (BomberMan player: _players)
         {
-            _bomberMan.doStep(_direction);
+            if (!_grid.hit(player.square, _direction))
+            {
+                player.doStep(_direction);
+            }
         }
 
         // fill
@@ -269,27 +282,37 @@ public class Game
         double factor = string.length() * fontSizeTop * 0.5;
         gc.fillText(string, _width -factor, 20) ;
 
-        _bomberMan.draw(gc);
-        _bomberMan.getOwnedFlag().draw(gc);
+        for (BomberMan player: _players)
+        {
+            player.draw(gc);
+            player.getOwnedFlag().draw(gc);
+        }
 
         _bombList.updateBombs(gc, _grid);
 
+        boolean collected = false;
         for (int i = 0; i < foodList.size(); i++)
         {
+            collected = false;
             Food f = foodList.get(i);
-
             Tile food = _grid.find(f.getMiddleCoord());
-            Tile bm = _grid.find(_bomberMan.getMiddleCoord());
 
-            if(food.compare(bm))
+            for (BomberMan player : _players)
             {
-                MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
-                collectPlayer.play();
-                _bombs++;
+                Tile bm = _grid.find(player.getMiddleCoord());
 
-                foodList.remove(f);
+                if (food.compare(bm)) {
+                    MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
+                    collectPlayer.play();
+                    _bombs++;
+
+                    foodList.remove(f);
+
+                    collected = true;
+                }
             }
-            else
+
+            if (!collected)
             {
                 f.draw(gc);
             }
@@ -308,12 +331,12 @@ public class Game
 
     }
 
-    private void _addBomb()
+    private void _addBomb(BomberMan player)
     {
         if(_bombs > 0)
         {
-            int x = (_bomberMan.square.downLeft.x + _bomberMan.square.downRight.x) / 2;
-            int y = (_bomberMan.square.upperLeft.y + _bomberMan.square.downLeft.y) / 2;
+            int x = (player.square.downLeft.x + player.square.downRight.x) / 2;
+            int y = (player.square.upperLeft.y + player.square.downLeft.y) / 2;
 
             if (_bombList.placeOnGrid(_grid, x, y) > 0)
             {
