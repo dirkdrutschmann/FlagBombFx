@@ -13,6 +13,17 @@ public class Util
     public static void showErrorMessageBox(String msg)
     {
         Alert alert = new Alert(Alert.AlertType.ERROR);
+        _showAlert(alert, msg);
+    }
+
+    public static void showMessageBox(String msg)
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        _showAlert(alert, msg);
+    }
+
+    private static void _showAlert(Alert alert, String msg)
+    {
         alert.setContentText(msg);
         alert.showAndWait();
     }

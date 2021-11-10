@@ -280,7 +280,7 @@ public class Game
         //TO DO DYNAMIC WIDTH
         String string = "Player 1: " + (_user != null ? _user.username : "Anonymous");
         double factor = string.length() * fontSizeTop * 0.5;
-        gc.fillText(string, _width -factor, 20) ;
+        gc.fillText(string, _width -factor, 20);
 
         for (BomberMan player: _players)
         {

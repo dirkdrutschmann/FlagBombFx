@@ -1,7 +1,6 @@
 package de.bhtpaf.pacbomb.services;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import de.bhtpaf.pacbomb.helper.classes.JWT;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.classes.map.Grid;
@@ -20,6 +19,8 @@ import org.apache.http.util.EntityUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Api {
     private String _apiUrl;
@@ -131,6 +132,80 @@ public class Api {
         }
 
         return  loggedInUser;
+    }
+
+    public boolean logoutUser(User user)
+    {
+        String path = _apiUrl + "/Login/Logout";
+
+        HttpPost request = new HttpPost(path);
+
+        request.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        StringEntity entity = new StringEntity(user.toJson(), ContentType.APPLICATION_JSON);
+        request.setEntity(entity);
+
+        boolean retValue = false;
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(request);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            HttpEntity responseEntity = response.getEntity();
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                retValue = true;
+            }
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return retValue;
+    }
+
+    public List<User> getLoggedInUsers(User user)
+    {
+        String path = _apiUrl + "/User/All";
+        List<User> loggedInUsers = null;
+
+        HttpGet httpGet = new HttpGet(path);
+        httpGet.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(httpGet);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                HttpEntity responseEntity = response.getEntity();
+                String responseString = _getStringFromInputStream(responseEntity.getContent());
+
+                JsonArray jsonArray = JsonParser.parseString(responseString).getAsJsonArray();
+
+                loggedInUsers = new ArrayList<>();
+
+                for (JsonElement e : jsonArray)
+                {
+                    loggedInUsers.add(User.CreateFromJson(e.toString()));
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return loggedInUsers;
     }
 
     public String getUserImage(User user)

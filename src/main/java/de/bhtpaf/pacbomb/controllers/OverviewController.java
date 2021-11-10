@@ -4,24 +4,28 @@ import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
-import de.bhtpaf.pacbomb.helper.interfaces.MessageHandler;
+import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
 import de.bhtpaf.pacbomb.services.Api;
-import de.bhtpaf.pacbomb.services.WebsocketClient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
-import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-public class OverviewController {
+public class OverviewController
+{
+
+    private List<LogoutEventListener> _logoutEventListeners = new ArrayList<>();
 
     private final int _stdGameSpeed = 250;
     private final int _stdGameWidth = 1000;
@@ -32,6 +36,8 @@ public class OverviewController {
     private Stage _mainStage;
     private Api _api;
     private Scene _previousScene;
+
+    private Timer _userListTimer = null;
 
     @FXML
     public Label lb_user;
@@ -63,11 +69,33 @@ public class OverviewController {
     @FXML
     public Label lb_loading;
 
+    @FXML
+    public ListView lv_availablePlayers;
+
     public void logoutUser(ActionEvent event)
     {
         event.consume();
-        _user = null;
-        _mainStage.setScene(_previousScene);
+
+        _setFormLoading(true, "Abmeldung wird ausgeführt");
+
+        new Thread(() -> {
+            if (_api.logoutUser(_user))
+            {
+                _logoutEventListeners.forEach((listener) -> listener.onUserLoggedOut(_user));
+                _user = null;
+            }
+            else
+            {
+                Platform.runLater(() -> {
+                    Util.showErrorMessageBox("Fehler bei der Abmeldung.");
+                });
+            }
+
+            Platform.runLater(() -> {
+                _setFormLoading(false);
+                _mainStage.setScene(_previousScene);
+            });
+        }).start();
     }
 
     public void startGame(ActionEvent event)
@@ -83,19 +111,7 @@ public class OverviewController {
             }
         });*/
 
-        bt_game_start.setDisable(true);
-        edt_game_speed.setDisable(true);
-        edt_game_bombs.setDisable(true);
-        edt_game_width.setDisable(true);
-        edt_game_squareFactor.setDisable(true);
-
-        if (img_loading.getImage() == null)
-        {
-            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("loading.gif")));
-        }
-
-        img_loading.setVisible(true);
-        lb_loading.setVisible(true);
+        _setFormLoading(true, "Spiel wird geladen...");
 
         int speed = _getValue(edt_game_speed, _stdGameSpeed);
         int width = _getValue(edt_game_width, _stdGameWidth);
@@ -119,14 +135,7 @@ public class OverviewController {
             }
 
             Platform.runLater(() -> {
-                img_loading.setVisible(false);
-                lb_loading.setVisible(false);
-
-                bt_game_start.setDisable(false);
-                edt_game_speed.setDisable(false);
-                edt_game_bombs.setDisable(false);
-                edt_game_width.setDisable(false);
-                edt_game_squareFactor.setDisable(false);
+                _setFormLoading(false);
 
                 try
                 {
@@ -156,6 +165,11 @@ public class OverviewController {
         _api = api;
     }
 
+    public void addLogoutEventListener(LogoutEventListener listener)
+    {
+        _logoutEventListeners.add(listener);
+    }
+
     public void init()
     {
         if (_user != null)
@@ -171,6 +185,64 @@ public class OverviewController {
         edt_game_squareFactor.textProperty().set(Integer.toString(_stdGameSquareFactor));
 
         edt_game_bombs.textProperty().set(Integer.toString(_stdGameBombs));
+
+        lv_availablePlayers.setCellFactory(param -> new ListCell<User>() {
+            @Override
+            protected void updateItem(User item, boolean empty)
+            {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.username == null)
+                {
+                    setText(null);
+                    setGraphic(null);
+                }
+                else
+                {
+                    setText(item.username + " (Login: " + new SimpleDateFormat("dd.MM.yyyy HH:mm").format(item.lastLogon) + ")");
+                }
+            }
+        });
+
+        lv_availablePlayers.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if(event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2)
+                {
+                    if (lv_availablePlayers.getItems().size() == 0)
+                    {
+                        return;
+                    }
+
+                    User user = (User)lv_availablePlayers.getSelectionModel().getSelectedItem();
+
+                    if (user == null)
+                    {
+                        return;
+                    }
+
+                    Util.showMessageBox(user.prename + " " + user.lastname + " (UserId: " + Integer.toString(user.id) + ")");
+                }
+            }
+        });
+
+        EventHandler currentHandle = _mainStage.getOnCloseRequest();
+
+        _mainStage.setOnCloseRequest(ev -> {
+
+            if (_userListTimer != null)
+            {
+                _userListTimer.cancel();
+                _userListTimer.purge();
+
+                System.out.println("UserList-Timer stopped");
+            }
+
+            currentHandle.handle(ev);
+        });
+
+
+        _startUserListTimer();
     }
 
     private int _getValue(TextField edt, int stdValue)
@@ -188,5 +260,113 @@ public class OverviewController {
         }
 
         return returnVal;
+    }
+
+    private void _startUserListTimer()
+    {
+        if (_userListTimer != null)
+        {
+            return;
+        }
+
+        // Current logged in users
+        _userListTimer = new Timer();
+
+        _userListTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (_user == null)
+                {
+                    return;
+                }
+
+                List<User> loggedInUsers = _api.getLoggedInUsers(_user);
+
+                // Eigener Nutzer nicht in Liste
+                loggedInUsers.removeIf(u -> u.id == _user.id);
+
+                if (loggedInUsers == null)
+                {
+                    Platform.runLater(() -> {
+                        lv_availablePlayers.getItems().clear();
+                    });
+
+                    return;
+                }
+
+                boolean found = false;
+                for (User user : loggedInUsers)
+                {
+                    found = false;
+                    for (Object listUser : lv_availablePlayers.getItems())
+                    {
+                        if (((User)listUser).id == user.id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        continue;
+                    }
+
+                    Platform.runLater(() -> {
+                        lv_availablePlayers.getItems().add(user);
+                    });
+                }
+
+                Object[] items = lv_availablePlayers.getItems().toArray();
+                for (int i = 0; i < items.length; i++)
+                {
+                    found = false;
+                    for (User user : loggedInUsers)
+                    {
+                        if (user.id == ((User)items[i]).id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        int finalI = i;
+                        Platform.runLater(() -> {
+                            lv_availablePlayers.getItems().remove(finalI);
+                        });
+                    }
+                }
+            }
+        }, new Date(), 5000);
+    }
+
+    private void _setFormLoading(boolean startLoading)
+    {
+        _setFormLoading(startLoading, "");
+    }
+
+    private void _setFormLoading(boolean startLoading, String loadingText)
+    {
+        bt_game_start.setDisable(startLoading);
+        edt_game_speed.setDisable(startLoading);
+        edt_game_bombs.setDisable(startLoading);
+        edt_game_width.setDisable(startLoading);
+        edt_game_squareFactor.setDisable(startLoading);
+
+        if (startLoading && img_loading.getImage() == null)
+        {
+            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("loading.gif")));
+        }
+
+        img_loading.setVisible(startLoading);
+
+        if (startLoading)
+        {
+            lb_loading.textProperty().set(loadingText);
+        }
+
+        lb_loading.setVisible(startLoading);
     }
 }

@@ -3,6 +3,7 @@ package de.bhtpaf.pacbomb.controllers;
 import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
+import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -20,8 +21,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class MainController {
+public class MainController implements LogoutEventListener
+{
     private Stage _mainStage;
+    private User _user;
     private final Api _api;
 
     @FXML
@@ -38,8 +41,8 @@ public class MainController {
 
     public MainController()
     {
-        //_api = new Api("http://dirkdrutschmann.de:61338/api");
-        _api = new Api("http://localhost:61339/api");
+        _api = new Api("http://dirkdrutschmann.de:61338/api");
+        //_api = new Api("http://localhost:61339/api");
     }
 
     @FXML
@@ -81,33 +84,47 @@ public class MainController {
                 }
             }
 
-            User finalLoginUser = loginUser;
+            _user = loginUser;
             String finalMsg = msg;
 
             Platform.runLater(() -> {
-                callOverviewScene(finalLoginUser, finalMsg);
+                callOverviewScene(finalMsg);
             });
         };
 
         new Thread(login).start();
     }
 
-    private void callOverviewScene(User loginUser, String msg)
+    private void callOverviewScene(String msg)
     {
         edt_username.setDisable(false);
         edt_password.setDisable(false);
         bt_login.setDisable(false);
         img_loading.setVisible(false);
 
-        if (loginUser == null)
+        if (_user == null)
         {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText(msg);
-            alert.showAndWait();
+            Util.showErrorMessageBox(msg);
 
             edt_password.textProperty().set("");
             return;
         }
+
+        _mainStage.setOnCloseRequest(ev -> {
+            if (_user == null)
+            {
+                return;
+            }
+
+            if (_api.logoutUser(_user))
+            {
+                System.out.println("logged out");
+            }
+            else
+            {
+                System.out.println("logout failed");
+            }
+        });
 
         try {
             FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("overview.fxml"));
@@ -117,8 +134,10 @@ public class MainController {
             OverviewController controller = loader.getController();
             controller.setMainStage(_mainStage);
             controller.setApi(_api);
-            controller.setUser(loginUser);
+            controller.setUser(_user);
             controller.init();
+
+            controller.addLogoutEventListener(this);
 
             edt_password.textProperty().set("");
 
@@ -156,5 +175,14 @@ public class MainController {
     public void setMainStage(Stage stage)
     {
         _mainStage = stage;
+    }
+
+    @Override
+    public void onUserLoggedOut(User user)
+    {
+        if (_user.id == user.id)
+        {
+            _user = null;
+        }
     }
 }
