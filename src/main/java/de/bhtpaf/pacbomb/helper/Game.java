@@ -94,7 +94,7 @@ public class Game
                         _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
                         _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
                         _bomberManSize,
-                        Flag.Color.red
+                        Flag.Color.yellow
                     ),
                     _user.id
                 )
