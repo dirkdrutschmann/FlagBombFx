@@ -56,7 +56,7 @@ public class MainController implements LogoutEventListener
 
         if (img_loading.getImage() == null)
         {
-            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("loading.gif")));
+            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("icons/loading.gif")));
         }
 
         img_loading.setVisible(true);
@@ -127,7 +127,7 @@ public class MainController implements LogoutEventListener
         });
 
         try {
-            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("overview.fxml"));
+            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("models/overview.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 1000, 600);
 
@@ -154,7 +154,7 @@ public class MainController implements LogoutEventListener
 
         try
         {
-            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("registerUser.fxml"));
+            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("models/registerUser.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 1000, 600);
 

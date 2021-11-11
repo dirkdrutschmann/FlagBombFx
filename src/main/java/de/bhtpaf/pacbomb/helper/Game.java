@@ -48,10 +48,10 @@ public class Game
 
     private boolean gameOver = false;
 
-    private Media soundCollect = new Media(PacBomb.class.getResource("collect.wav").toString());
-    private Media backgroundMusic = new Media(PacBomb.class.getResource("sound.wav").toString());
-    private Media gameOverMusic = new Media(PacBomb.class.getResource("gameover.wav").toString());
-    private Media errorMusic = new Media(PacBomb.class.getResource("empty.wav").toString());
+    private Media soundCollect = new Media(PacBomb.class.getResource("sounds/collect.wav").toString());
+    private Media backgroundMusic = new Media(PacBomb.class.getResource("sounds/sound.wav").toString());
+    private Media gameOverMusic = new Media(PacBomb.class.getResource("sounds/gameover.wav").toString());
+    private Media errorMusic = new Media(PacBomb.class.getResource("sounds/empty.wav").toString());
     private MediaPlayer backgroundPlayer = new MediaPlayer(backgroundMusic);
     private List<BomberMan> _players = null;
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);

@@ -3,10 +3,12 @@ package de.bhtpaf.pacbomb.helper.classes.map.items;
 import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.BomberMan;
 import de.bhtpaf.pacbomb.helper.classes.map.*;
+import javafx.concurrent.Task;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 
 import java.util.*;
 
@@ -15,7 +17,8 @@ public class Bombs implements Collection<Bomb>
 
     private HashMap<String, Image[]> _bombImages = init();
 
-    private final Media _soundBoom = new Media(PacBomb.class.getResource("boom.mp3").toString());
+    private final Media _soundBoom = new Media(PacBomb.class.getResource("sounds/boom.mp3").toString());
+    private final MediaPlayer _boomPlayer = new MediaPlayer(_soundBoom);
     private final int _bombSize;
     private final int _boomFactor = 2;
 
@@ -49,7 +52,6 @@ public class Bombs implements Collection<Bomb>
             if (bombState == 5) {
                 MediaPlayer boomPlayer = new MediaPlayer(_soundBoom);
                 boomPlayer.play();
-
                 List<ExtendedTile> infected = bomb.getInfectedTiles(grid);
 
                 for (ExtendedTile field : infected)
@@ -72,7 +74,6 @@ public class Bombs implements Collection<Bomb>
 
         if (pos != null)
         {
-            System.out.println(player.getOwnedFlag().toString());
             _bombs.add(new Bomb(pos, _bombImages.get(player.getOwnedFlag().getColor())));
             return size();
         }
@@ -161,6 +162,20 @@ public class Bombs implements Collection<Bomb>
                     });
         }
         return bombImages;
+    }
+
+    private void boom(){
+        new Thread(() -> {
+            MediaPlayer boomPlayer = new MediaPlayer(_soundBoom);
+            boomPlayer.play();
+            try {
+                Thread.sleep((long) boomPlayer.getCycleDuration().toMillis());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+           boomPlayer.dispose();
+
+        }).start();
     }
 
 }

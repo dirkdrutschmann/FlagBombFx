@@ -357,7 +357,7 @@ public class OverviewController
 
         if (startLoading && img_loading.getImage() == null)
         {
-            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("loading.gif")));
+            img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("icons/loading.gif")));
         }
 
         img_loading.setVisible(startLoading);

@@ -16,9 +16,9 @@ public enum Type {
     private static final int SIZE = VALUES.size();
 
     private static final Random RANDOM = new Random();
-    private static final Image wallImage = new Image(PacBomb.class.getResourceAsStream("wall.png"));
-    private static final Image blockImage = new Image(PacBomb.class.getResourceAsStream("stone.png"));
-    private static final Image freeImage = new Image(PacBomb.class.getResourceAsStream("free.png"));
+    private static final Image wallImage = new Image(PacBomb.class.getResourceAsStream("grid/wall.png"));
+    private static final Image blockImage = new Image(PacBomb.class.getResourceAsStream("grid/stone.png"));
+    private static final Image freeImage = new Image(PacBomb.class.getResourceAsStream("grid/free.png"));
 
     public static Type random()
     {

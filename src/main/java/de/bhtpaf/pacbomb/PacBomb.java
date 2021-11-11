@@ -14,7 +14,7 @@ public class PacBomb extends Application  {
 
         try
         {
-            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("main.fxml"));
+            FXMLLoader loader = new FXMLLoader(PacBomb.class.getResource("models/main.fxml"));
             Parent root = (Parent)loader.load();
             Scene scene = new Scene(root, 1000, 600);
 
