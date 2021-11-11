@@ -17,8 +17,8 @@ public class Bombs implements Collection<Bomb>
 
     private HashMap<String, Image[]> _bombImages = init();
 
-    private final Media _soundBoom = new Media(PacBomb.class.getResource("sounds/boom.mp3").toString());
-    private final MediaPlayer _boomPlayer = new MediaPlayer(_soundBoom);
+    private final Media _soundBoom = new Media(PacBomb.class.getResource("sounds/boom.wav").toString());
+
     private final int _bombSize;
     private final int _boomFactor = 2;
 
@@ -27,6 +27,7 @@ public class Bombs implements Collection<Bomb>
     public Bombs (int bombSize)
     {
         _bombSize = bombSize;
+
     }
 
     public void updateBombs(GraphicsContext gc, Grid grid)
@@ -50,8 +51,7 @@ public class Bombs implements Collection<Bomb>
 
             // Bombe explodiert
             if (bombState == 5) {
-                MediaPlayer boomPlayer = new MediaPlayer(_soundBoom);
-                boomPlayer.play();
+                bomb.explode();
                 List<ExtendedTile> infected = bomb.getInfectedTiles(grid);
 
                 for (ExtendedTile field : infected)
@@ -74,7 +74,7 @@ public class Bombs implements Collection<Bomb>
 
         if (pos != null)
         {
-            _bombs.add(new Bomb(pos, _bombImages.get(player.getOwnedFlag().getColor())));
+            _bombs.add(new Bomb(pos, _bombImages.get(player.getOwnedFlag().getColor()), _soundBoom));
             return size();
         }
 
@@ -162,20 +162,6 @@ public class Bombs implements Collection<Bomb>
                     });
         }
         return bombImages;
-    }
-
-    private void boom(){
-        new Thread(() -> {
-            MediaPlayer boomPlayer = new MediaPlayer(_soundBoom);
-            boomPlayer.play();
-            try {
-                Thread.sleep((long) boomPlayer.getCycleDuration().toMillis());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-           boomPlayer.dispose();
-
-        }).start();
     }
 
 }

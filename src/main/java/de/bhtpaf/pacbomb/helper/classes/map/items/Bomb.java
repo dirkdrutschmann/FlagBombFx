@@ -3,6 +3,8 @@ package de.bhtpaf.pacbomb.helper.classes.map.items;
 import de.bhtpaf.pacbomb.helper.classes.map.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,25 +21,27 @@ public class Bomb extends Item
 
     private final int _boomFactor = 2;
 
+    private final MediaPlayer _boomSound;
+
     // Millisekunden bis Bombe explodiert
     private final long _bombTime = 1750;
 
     // Bombenstatus
     private int _state = 0;
 
-    public Bomb(Square square, Image[] stateImages)
+    public Bomb(Square square, Image[] stateImages, Media boom)
     {
         super(square.downLeft.x, square.downLeft.y, square.downRight.x - square.downLeft.x);
         _stateImage = stateImages;
-
+        _boomSound = new MediaPlayer(boom);
         _startBombTimer(_bombTime);
     }
 
-    public Bomb(Square square, Image[] stateImages, long bombTime)
+    public Bomb(Square square, Image[] stateImages, long bombTime, Media boom)
     {
         super(square.downLeft.x, square.downLeft.y, square.downRight.x - square.downLeft.x);
         _stateImage = stateImages;
-
+        _boomSound = new MediaPlayer(boom);
         _startBombTimer(bombTime);
     }
 
@@ -157,6 +161,9 @@ public class Bomb extends Item
         }
 
         return infectedTiles;
+    }
+    public void explode(){
+        _boomSound.play();
     }
 
     @Override
