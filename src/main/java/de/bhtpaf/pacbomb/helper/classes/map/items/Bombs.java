@@ -147,7 +147,7 @@ public class Bombs implements Collection<Bomb>
         _bombs.clear();
     }
 
-    public HashMap<String, Image[]> init (){
+    private HashMap<String, Image[]> init (){
         HashMap<String, Image[]> bombImages = new HashMap<String, Image[]>();
         for(Flag.Color color : Flag.Color.values()){
             bombImages.put(color.toString(),  new Image[]
