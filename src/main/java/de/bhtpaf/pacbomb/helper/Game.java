@@ -5,7 +5,7 @@ import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.classes.map.*;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Flag;
-import de.bhtpaf.pacbomb.helper.classes.map.items.Food;
+import de.bhtpaf.pacbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -57,7 +57,7 @@ public class Game
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
     private Bombs _bombList;
-    private List<Food> foodList = new ArrayList();
+    private List<Gem> gemList = new ArrayList();
     
     public Game(Api api, Stage stage, User user, int speed, int width, int squareFactor, int bombs)
     {
@@ -94,7 +94,7 @@ public class Game
                         _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
                         _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
                         _bomberManSize,
-                        Flag.Color.yellow
+                        Flag.Color.blue
                     ),
                     _user.id
                 )
@@ -291,22 +291,22 @@ public class Game
         _bombList.updateBombs(gc, _grid);
 
         boolean collected = false;
-        for (int i = 0; i < foodList.size(); i++)
+        for (int i = 0; i < gemList.size(); i++)
         {
             collected = false;
-            Food f = foodList.get(i);
-            Tile food = _grid.find(f.getMiddleCoord());
+            Gem f = gemList.get(i);
+            Tile gem = _grid.find(f.getMiddleCoord());
 
             for (BomberMan player : _players)
             {
                 Tile bm = _grid.find(player.getMiddleCoord());
 
-                if (food.compare(bm)) {
+                if (gem.compare(bm)) {
                     MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
                     collectPlayer.play();
                     _bombs++;
 
-                    foodList.remove(f);
+                    gemList.remove(f);
 
                     collected = true;
                 }
@@ -320,12 +320,12 @@ public class Game
 
         Random rand = new Random();
 
-        if (foodList.size() < 5)
+        if (gemList.size() < 5)
         {
-            for (int i = 0; i < 1 + rand.nextInt(6 - foodList.size()); i++)
+            for (int i = 0; i < 1 + rand.nextInt(6 - gemList.size()); i++)
             {
-                foodList.add(Food.getRandom(_grid));
-                foodList.get(foodList.size() - 1).draw(gc);
+                gemList.add(Gem.getRandom(_grid));
+                gemList.get(gemList.size() - 1).draw(gc);
             }
         }
 
