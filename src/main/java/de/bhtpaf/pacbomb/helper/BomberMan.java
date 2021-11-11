@@ -8,7 +8,7 @@ import javafx.scene.image.Image;
 
 public class BomberMan extends Item
 {
-    private final Image _bomberMan = new Image(PacBomb.class.getResourceAsStream("bomberman.gif"));
+    private final Image _bomberMan;
 
     public int _width;
 
@@ -21,6 +21,8 @@ public class BomberMan extends Item
         super(x, y, width);
         _width = width;
         _ownedFlag = ownedFlag;
+        System.out.println("/bomb/"+ _ownedFlag.getColor() +"/bomberman.gif");
+        _bomberMan = new Image(PacBomb.class.getResourceAsStream("bomb/"+ _ownedFlag.getColor() +"/bomberman.gif"));
         this.id = id;
     }
 

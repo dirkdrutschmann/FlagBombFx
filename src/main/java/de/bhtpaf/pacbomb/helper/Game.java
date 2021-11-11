@@ -94,7 +94,7 @@ public class Game
                         _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
                         _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
                         _bomberManSize,
-                        Flag.Color.blue
+                        Flag.Color.red
                     ),
                     _user.id
                 )
@@ -338,7 +338,7 @@ public class Game
             int x = (player.square.downLeft.x + player.square.downRight.x) / 2;
             int y = (player.square.upperLeft.y + player.square.downLeft.y) / 2;
 
-            if (_bombList.placeOnGrid(_grid, x, y) > 0)
+            if (_bombList.placeOnGrid(_grid, x, y, player) > 0)
             {
                 _bombs--;
             }

@@ -8,16 +8,38 @@ public class Flag extends Item
 {
     public enum Color
     {
-        blue,
-        red,
-        green,
-        yellow
+        blue{
+            @Override
+            public String toString() {
+                return "blue";
+            }
+        },
+        red{
+            @Override
+            public String toString() {
+                return "red";
+            }
+        },
+        green{
+            @Override
+            public String toString() {
+                return "green";
+            }
+        },
+        yellow{
+            @Override
+            public String toString() {
+                return "yellow";
+            }
+        }
+
+
     };
 
-    private final Image _blueFlagImage = new Image(PacBomb.class.getResourceAsStream("flag_blue.png"));
-    private final Image _redFlagImage = new Image(PacBomb.class.getResourceAsStream("flag_red.png"));
-    private final Image _greenFlagImage = new Image(PacBomb.class.getResourceAsStream("flag_green.png"));
-    private final Image _yellowFlagImage = new Image(PacBomb.class.getResourceAsStream("flag_yellow.png"));
+    private final Image _blueFlagImage = new Image(PacBomb.class.getResourceAsStream("flag/flag_blue.png"));
+    private final Image _redFlagImage = new Image(PacBomb.class.getResourceAsStream("flag/flag_red.png"));
+    private final Image _greenFlagImage = new Image(PacBomb.class.getResourceAsStream("flag/flag_green.png"));
+    private final Image _yellowFlagImage = new Image(PacBomb.class.getResourceAsStream("flag/flag_yellow.png"));
 
     private final Color _color;
     private int _flagSize;
@@ -59,5 +81,8 @@ public class Flag extends Item
         }
 
         gc.drawImage(flagImage, square.downLeft.x, square.downLeft.y, _flagSize, _flagSize);
+    }
+    public String getColor(){
+        return this._color.toString();
     }
 }

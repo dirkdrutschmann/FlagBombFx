@@ -1,6 +1,7 @@
 package de.bhtpaf.pacbomb.helper.classes.map.items;
 
 import de.bhtpaf.pacbomb.PacBomb;
+import de.bhtpaf.pacbomb.helper.BomberMan;
 import de.bhtpaf.pacbomb.helper.classes.map.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -11,15 +12,8 @@ import java.util.*;
 
 public class Bombs implements Collection<Bomb>
 {
-    private final Image[] _bombImages = new Image[]
-    {
-            new Image(PacBomb.class.getResourceAsStream("bomb1.gif")),
-            new Image(PacBomb.class.getResourceAsStream("bomb2.gif")),
-            new Image(PacBomb.class.getResourceAsStream("bomb3.gif")),
-            new Image(PacBomb.class.getResourceAsStream("bomb4.gif")),
-            new Image(PacBomb.class.getResourceAsStream("bomb5.gif")),
-            new Image(PacBomb.class.getResourceAsStream("bomb6.gif"))
-    };
+
+    private HashMap<String, Image[]> _bombImages = init();
 
     private final Media _soundBoom = new Media(PacBomb.class.getResource("boom.mp3").toString());
     private final int _bombSize;
@@ -72,13 +66,14 @@ public class Bombs implements Collection<Bomb>
         }
     }
 
-    public int placeOnGrid(Grid grid, int x, int y)
+    public int placeOnGrid(Grid grid, int x, int y, BomberMan player)
     {
         Square pos = grid.find(new Coord(x, y));
 
         if (pos != null)
         {
-            _bombs.add(new Bomb(pos, _bombImages));
+            System.out.println(player.getOwnedFlag().toString());
+            _bombs.add(new Bomb(pos, _bombImages.get(player.getOwnedFlag().getColor())));
             return size();
         }
 
@@ -151,4 +146,21 @@ public class Bombs implements Collection<Bomb>
     public void clear() {
         _bombs.clear();
     }
+
+    public HashMap<String, Image[]> init (){
+        HashMap<String, Image[]> bombImages = new HashMap<String, Image[]>();
+        for(Flag.Color color : Flag.Color.values()){
+            bombImages.put(color.toString(),  new Image[]
+                    {
+                            new Image(PacBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb1.png")),
+                            new Image(PacBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb2.png")),
+                            new Image(PacBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb3.png")),
+                            new Image(PacBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb4.png")),
+                            new Image(PacBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb5.png")),
+                            new Image(PacBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb6.png"))
+                    });
+        }
+        return bombImages;
+    }
+
 }
