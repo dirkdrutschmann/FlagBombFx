@@ -11,7 +11,7 @@ import java.util.Random;
 public class Gem extends Item
 {
 
-    private final Image[] _gemImages = new Image[]{
+    private static final Image[] _gemImages = new Image[]{
             new Image(PacBomb.class.getResourceAsStream("food/1.png")),
             new Image(PacBomb.class.getResourceAsStream("food/2.png")),
             new Image(PacBomb.class.getResourceAsStream("food/3.png"))
@@ -29,7 +29,7 @@ public class Gem extends Item
     public static Gem getRandom(Grid grid)
     {
         Random rand = new Random();
-        int selection = rand.nextInt(3);
+        int selection = rand.nextInt(_gemImages.length);
 
 
         Tile tile = grid.columns.get(grid.columnCount - 1).get(grid.rowCount - 1);
