@@ -11,18 +11,18 @@ import java.util.Random;
 public class Gem extends Item
 {
 
-    private final Image[] _foodImages = new Image[]{
+    private final Image[] _gemImages = new Image[]{
             new Image(PacBomb.class.getResourceAsStream("food/1.png")),
             new Image(PacBomb.class.getResourceAsStream("food/2.png")),
             new Image(PacBomb.class.getResourceAsStream("food/3.png"))
     };
     private final int _selectedImage;
-    private final int _foodSize;
+    private final int _gemSize;
 
     public Gem(int x, int y, int width , int selection)
     {
         super(x, y, width);
-        _foodSize =  width - 2;
+        _gemSize =  width - 2;
         _selectedImage = selection;
     }
 
@@ -58,7 +58,7 @@ public class Gem extends Item
     @Override
     public void draw(GraphicsContext gc)
     {
-        gc.drawImage( _foodImages[_selectedImage], square.downLeft.x , square.downLeft.y , _foodSize, _foodSize);
+        gc.drawImage( _gemImages[_selectedImage], square.downLeft.x , square.downLeft.y , _gemSize, _gemSize);
     }
 }
 
