@@ -163,6 +163,7 @@ public class Bomb extends Item
         return infectedTiles;
     }
     public void explode(){
+        _boomSound.setVolume(0.5);
         _boomSound.play();
     }
 

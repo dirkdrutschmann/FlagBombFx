@@ -105,6 +105,7 @@ public class Game
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
             backgroundPlayer.play();
+
             VBox root = new VBox();
             Canvas c = new Canvas(_width, _height);
             GraphicsContext gc = c.getGraphicsContext2D();
@@ -143,7 +144,7 @@ public class Game
                         {
                             backgroundPlayer.stop();
                         }
-
+                        gameOverPlayer.setVolume(0.5);
                         gameOverPlayer.play();
 
                         // Back to Overview in 5 Seconds
@@ -250,6 +251,7 @@ public class Game
     {
         if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING)
         {
+            backgroundPlayer.setVolume(0.1);
             backgroundPlayer.play();
         }
 
@@ -303,6 +305,7 @@ public class Game
 
                 if (gem.compare(bm)) {
                     MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
+                    collectPlayer.setVolume(0.5);
                     collectPlayer.play();
                     _bombs++;
 
@@ -346,6 +349,7 @@ public class Game
         else
         {
             MediaPlayer errorPlayer = new MediaPlayer(errorMusic);
+            errorPlayer.setVolume(0.5);
             errorPlayer.play();
         }
     }

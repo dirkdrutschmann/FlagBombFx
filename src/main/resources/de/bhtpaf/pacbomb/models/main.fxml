@@ -19,7 +19,6 @@
        <Button fx:id="bt_login" layoutX="520.0" layoutY="150.0" mnemonicParsing="false" onAction="#loginUser" prefWidth="80" text="Login" />
        <ImageView fx:id="img_loading" fitHeight="50.0" fitWidth="50.0" layoutX="400.0" layoutY="150.0" pickOnBounds="true" preserveRatio="true" visible="false" />
        <Hyperlink layoutX="450.0" layoutY="200.0" onAction="#callRegistrationScene" text="Noch kein Account?" />
-      <ImageView fx:id="img_logo" fitHeight="349.0" fitWidth="371.0" layoutX="324.0" layoutY="231.0" pickOnBounds="true" preserveRatio="true">
-      </ImageView>
+      <ImageView fx:id="img_logo" fitHeight="349.0" fitWidth="371.0" layoutX="324.0" layoutY="231.0" pickOnBounds="true" preserveRatio="true" />
    </Pane>
 </AnchorPane>

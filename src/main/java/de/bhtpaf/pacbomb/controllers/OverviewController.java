@@ -67,6 +67,9 @@ public class OverviewController
     public ImageView img_loading;
 
     @FXML
+    public ImageView img_logo;
+
+    @FXML
     public Label lb_loading;
 
     @FXML
@@ -178,6 +181,11 @@ public class OverviewController
             img_pane.setCenter(img_user);
 
             lb_user.textProperty().set("Hallo " + _user.prename + "!");
+        }
+
+        if (img_logo.getImage() == null)
+        {
+            img_logo.setImage(new Image(PacBomb.class.getResourceAsStream("icons/logo.png")));
         }
 
         edt_game_speed.textProperty().set(Integer.toString(_stdGameSpeed));
