@@ -39,6 +39,9 @@ public class MainController implements LogoutEventListener
     @FXML
     public ImageView img_loading;
 
+    @FXML
+    public ImageView img_logo;
+
     public MainController()
     {
         _api = new Api("http://dirkdrutschmann.de:61338/api");
@@ -58,6 +61,7 @@ public class MainController implements LogoutEventListener
         {
             img_loading.setImage(new Image(PacBomb.class.getResourceAsStream("icons/loading.gif")));
         }
+
 
         img_loading.setVisible(true);
 
@@ -174,6 +178,13 @@ public class MainController implements LogoutEventListener
 
     public void setMainStage(Stage stage)
     {
+
+        if (img_logo.getImage() == null)
+    {
+        img_logo.setImage(new Image(PacBomb.class.getResourceAsStream("icons/logo.png")));
+    }
+
+
         _mainStage = stage;
     }
 
