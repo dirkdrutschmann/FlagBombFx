@@ -5,10 +5,12 @@ import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
+import de.bhtpaf.pacbomb.helper.interfaces.MessageHandler;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPairStatus;
 import de.bhtpaf.pacbomb.helper.responses.StdResponse;
 import de.bhtpaf.pacbomb.services.Api;
+import de.bhtpaf.pacbomb.services.WebsocketClient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,6 +24,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -43,6 +46,8 @@ public class OverviewController
     private Timer _userListTimer = null;
     private Timer _incomingPlayRequestsTimer = null;
     private Timer _outgoingPlayRequestsTimer = null;
+
+    private WebsocketClient _wsClient = null;
 
     @FXML
     public Label lb_user;
@@ -115,15 +120,6 @@ public class OverviewController
     public void startGame(ActionEvent event)
     {
         event.consume();
-
-        /*final WebsocketClient wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl()));
-
-        wsClient.addMessageHandler(new MessageHandler() {
-            @Override
-            public void handleMessage(String message) {
-                System.out.println(message);
-            }
-        });*/
 
         _setFormLoading(true, "Spiel wird geladen...");
 
@@ -371,9 +367,13 @@ public class OverviewController
 
                             if (response.success)
                             {
+                                if (_wsClient == null)
+                                {
+                                    _wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl(pair.id, _user.id)));
+                                }
+
                                 Platform.runLater(() ->
                                 {
-
                                     Util.showMessageBox(response.message);
                                 });
                             }

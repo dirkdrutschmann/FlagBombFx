@@ -248,10 +248,11 @@ public class Api {
         return _apiUrl;
     }
 
-    public String getWebSocketUrl()
+    public String getWebSocketUrl(String pairId, int userId)
     {
         URI uri = URI.create(_apiUrl);
-        return "ws://" + uri.getAuthority() + uri.getPath() + "/ws";
+        return "ws://" + uri.getAuthority() + uri.getPath() + "/game/ws/" + pairId + "/" + Integer.toString(userId);
+        //return _apiUrl + + "/ws/" + pairId + "/" + Integer.toString(userId);
     }
 
     public StdResponse sendPlayRequest(User requestingUser, int requestedUserId)
@@ -297,7 +298,7 @@ public class Api {
     public Grid getGrid(Grid initData, User user)
     {
         Grid grid = initData;
-        String path = _apiUrl + "/Map";
+        String path = _apiUrl + "/Game/map";
 
         HttpGetWithEntity httpGet = new HttpGetWithEntity(path);
         httpGet.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);

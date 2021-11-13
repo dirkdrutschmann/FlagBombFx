@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="de.bhtpaf.pacbomb.controllers.RegisterUserController"
+            prefHeight="600.0" prefWidth="1000.0">
+    <Pane prefHeight="600.0" prefWidth="1000.0">
+        <Label layoutX="400.0" layoutY="30.0" text="Nutzername" />
+        <TextField fx:id="edt_username" layoutX="400.0" layoutY="50.0" prefHeight="25.0" prefWidth="200.0" />
+
+        <Label layoutX="400.0" layoutY="90.0" text="Vorname" />
+        <TextField fx:id="edt_prename" layoutX="400.0" layoutY="110.0" prefHeight="25.0" prefWidth="200.0" />
+
+        <Label layoutX="400.0" layoutY="150.0" text="Nachname" />
+        <TextField fx:id="edt_lastname" layoutX="400.0" layoutY="170.0" prefHeight="25.0" prefWidth="200.0" />
+
+        <Label layoutX="400.0" layoutY="210.0" text="E-Mailadresse" />
+        <TextField fx:id="edt_email" layoutX="400.0" layoutY="230.0" prefHeight="25.0" prefWidth="200.0" />
+
+        <Label layoutX="400.0" layoutY="270.0" text="Passwort" />
+        <PasswordField fx:id="edt_password" layoutX="400.0" layoutY="290.0" prefHeight="25.0" prefWidth="200.0" />
+
+        <Button layoutX="400.0" layoutY="330.0" mnemonicParsing="false" prefWidth="80" text="Zurück" onAction="#backToLogin" />
+        <Button layoutX="520.0" layoutY="330.0" mnemonicParsing="false" prefWidth="80" text="Registrieren" onAction="#registerUser" />
+    </Pane>
+</AnchorPane>

@@ -24,12 +24,15 @@ public class WebsocketClient
         {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             container.connectToServer(this, endpointURI);
+            this.messageHandler = _getMessageHandler();
         }
         catch (Exception e)
         {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+
+        System.out.println(endpointURI.toString() + ": WebSocket init");
     }
 
     @OnOpen
@@ -53,16 +56,18 @@ public class WebsocketClient
         }
     }
 
-    public void addMessageHandler(MessageHandler msgHandler)
+    private MessageHandler _getMessageHandler()
     {
-        this.messageHandler = msgHandler;
+        return new MessageHandler() {
+            @Override
+            public void handleMessage(String message) {
+                System.out.println(message);
+            }
+        };
     }
 
     public void sendMessage(String message)
     {
         this.userSession.getAsyncRemote().sendText(message);
     }
-
-
-
 }
