@@ -6,6 +6,7 @@ import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
+import de.bhtpaf.pacbomb.helper.responses.PlayingPairStatus;
 import de.bhtpaf.pacbomb.helper.responses.StdResponse;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.application.Platform;
@@ -225,54 +226,9 @@ public class OverviewController
         lv_incomingRequest.setCellFactory(param -> _getPlayRequestListCell(false));
         lv_outgoingRequest.setCellFactory(param -> _getPlayRequestListCell(true));
 
-        lv_availablePlayers.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if(event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2)
-                {
-                    if (lv_availablePlayers.getItems().size() == 0)
-                    {
-                        return;
-                    }
-
-                    User user = (User)lv_availablePlayers.getSelectionModel().getSelectedItem();
-
-                    if (user == null)
-                    {
-                        return;
-                    }
-
-                    Alert yesNoAlert = Util.getYesNoMessageBox("Soll eine Spieleanfrage an " + user.username + " gesendet werden?", "Spielanfrage senden?");
-                    yesNoAlert.showAndWait().ifPresent(type ->
-                    {
-                        if (type.getButtonData() == ButtonBar.ButtonData.YES)
-                        {
-                            // Anfrage senden
-                            System.out.println("Anfrage an UserId" + user.id + " senden");
-
-                            new Thread(() -> {
-                               StdResponse result = _api.sendPlayRequest(_user, user.id);
-
-                               if (result.success == false)
-                               {
-                                   Platform.runLater(() -> {
-                                       Util.showErrorMessageBox(result.message);
-                                   });
-                               }
-                               else
-                               {
-                                    Platform.runLater(() -> {
-                                        Util.showMessageBox(result.message);
-                                    });
-                               }
-                            }).start();
-
-                            yesNoAlert.close();
-                        }
-                    });
-                }
-            }
-        });
+        // Click Event
+        lv_availablePlayers.setOnMouseClicked(_getAvailablePlayersOnMouseClickedHandler());
+        lv_incomingRequest.setOnMouseClicked(_getIncomingRequestOnMouseClickHandler());
 
         EventHandler currentHandle = _mainStage.getOnCloseRequest();
 
@@ -314,6 +270,149 @@ public class OverviewController
         // Start timer for outgoing play request
         _startOutgoingPlayRequestTimer();
 
+    }
+
+    private EventHandler<MouseEvent> _getAvailablePlayersOnMouseClickedHandler()
+    {
+        return new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event)
+            {
+                if(event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2)
+                {
+                    if (lv_availablePlayers.getItems().size() == 0)
+                    {
+                        return;
+                    }
+
+                    User user = (User)lv_availablePlayers.getSelectionModel().getSelectedItem();
+
+                    if (user == null)
+                    {
+                        return;
+                    }
+
+                    Alert yesNoAlert = Util.getYesNoMessageBox("Soll eine Spieleanfrage an " + user.username + " gesendet werden?", "Spielanfrage senden?");
+                    yesNoAlert.showAndWait().ifPresent(type ->
+                    {
+                        if (type.getButtonData() == ButtonBar.ButtonData.YES)
+                        {
+                            // Anfrage senden
+                            System.out.println("Anfrage an UserId" + user.id + " senden");
+
+                            new Thread(() -> {
+                                StdResponse result = _api.sendPlayRequest(_user, user.id);
+
+                                if (result.success == false)
+                                {
+                                    Platform.runLater(() -> {
+                                        Util.showErrorMessageBox(result.message);
+                                    });
+                                }
+                                else
+                                {
+                                    Platform.runLater(() -> {
+                                        Util.showMessageBox(result.message);
+                                    });
+                                }
+                            }).start();
+
+                            yesNoAlert.close();
+                        }
+                    });
+                }
+            }
+        };
+    }
+
+    private EventHandler<MouseEvent> _getIncomingRequestOnMouseClickHandler()
+    {
+        return new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event)
+            {
+                if(event.getButton() != MouseButton.PRIMARY || event.getClickCount() == 2)
+                {
+                    return;
+                }
+
+                if (lv_incomingRequest.getItems().size() == 0)
+                {
+                    return;
+                }
+
+                PlayingPair pair = (PlayingPair)lv_incomingRequest.getSelectionModel().getSelectedItem();
+
+                if (pair == null)
+                {
+                    return;
+                }
+
+                if (pair.status == PlayingPairStatus.ACCEPTED)
+                {
+                    return;
+                }
+
+                List<ButtonType> buttons = new ArrayList<>();
+                buttons.add(new ButtonType("Annehmen", ButtonBar.ButtonData.YES));
+                buttons.add(new ButtonType("Ablehnen", ButtonBar.ButtonData.NO));
+                buttons.add(new ButtonType("Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE));
+
+                Alert alert = Util.getCustomMessageBox("Anfrage von " + pair.requestingUser.username, "Eingehende Spieleanfrage", buttons);
+                alert.showAndWait().ifPresent(type ->
+                {
+                    if (type.getButtonData() == ButtonBar.ButtonData.YES)
+                    {
+                        new Thread(() ->
+                        {
+                            StdResponse response = _api.acceptIncomingPlayRequest(_user, pair.requestingUser.id);
+
+                            if (response.success)
+                            {
+                                Platform.runLater(() ->
+                                {
+
+                                    Util.showMessageBox(response.message);
+                                });
+                            }
+                            else
+                            {
+                                Platform.runLater(() ->
+                                {
+                                    Util.showErrorMessageBox(response.message);
+                                });
+                            }
+                        }).start();
+                    }
+                    else if (type.getButtonData() == ButtonBar.ButtonData.NO)
+                    {
+                        new Thread(() ->
+                        {
+                            StdResponse response = _api.rejectIncomingPlayRequest(_user, pair.requestingUser.id);
+
+                            if (response.success)
+                            {
+                                Platform.runLater(() ->
+                                {
+                                    Util.showMessageBox(response.message);
+                                });
+                            }
+                            else
+                            {
+                                Platform.runLater(() ->
+                                {
+                                    Util.showErrorMessageBox(response.message);
+                                });
+                            }
+                        }).start();
+                    }
+
+                    alert.close();
+                });
+            }
+        };
     }
 
     private int _getValue(TextField edt, int stdValue)
@@ -579,14 +678,14 @@ public class OverviewController
                 }
                 else
                 {
-                    String txt = "Anfrage von ";
+                    String txt = "Anfrage von " + item.requestingUser.username + (item.status == PlayingPairStatus.ACCEPTED ? " (Angenommen)" : "");
 
                     if (outgoing)
                     {
-                        txt = "Anfrage an ";
+                        txt = "Anfrage an " + item.requestedUser.username;
                     }
 
-                    setText(txt + item.requestingUser.username);
+                    setText(txt);
                 }
             }
         };

@@ -7,7 +7,9 @@ import javafx.scene.image.Image;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 public class Util
 {
@@ -25,6 +27,15 @@ public class Util
 
     public static Alert getYesNoMessageBox(String msg, String title)
     {
+        List<ButtonType> buttons = new ArrayList<>();
+        buttons.add(new ButtonType("Ja", ButtonBar.ButtonData.YES));
+        buttons.add(new ButtonType("Nein", ButtonBar.ButtonData.NO));
+
+        return getCustomMessageBox(msg, title, buttons);
+    }
+
+    public static Alert getCustomMessageBox(String msg, String title, List<ButtonType> buttons)
+    {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
 
         if (title == null)
@@ -35,12 +46,8 @@ public class Util
         alert.setTitle(title);
         alert.setContentText(msg);
 
-        ButtonType yesButton = new ButtonType("Ja", ButtonBar.ButtonData.YES);
-        ButtonType noButton = new ButtonType("Nein", ButtonBar.ButtonData.NO);
-
-        alert.getButtonTypes().setAll(yesButton, noButton);
+        alert.getButtonTypes().setAll(buttons);
         return alert;
-
     }
 
     private static void _showAlert(Alert alert, String msg)

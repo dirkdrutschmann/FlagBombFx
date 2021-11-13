@@ -15,6 +15,8 @@ public class PlayingPair
 
     public Date requestTime;
 
+    public PlayingPairStatus status;
+
     public static PlayingPair createFromJson(String json)
     {
         return new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create().fromJson(json, PlayingPair.class);

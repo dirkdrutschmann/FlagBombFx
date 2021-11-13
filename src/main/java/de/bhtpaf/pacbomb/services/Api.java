@@ -257,28 +257,19 @@ public class Api {
     public StdResponse sendPlayRequest(User requestingUser, int requestedUserId)
     {
         String path = _apiUrl + "/user/PlayRequest/" + requestedUserId;
-        HttpPost postRequest = new HttpPost(path);
+        return _getStdResponseFromPost(requestingUser, path);
+    }
 
-        postRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + requestingUser.jwtToken.token);
+    public StdResponse acceptIncomingPlayRequest(User user, int requestingUserId)
+    {
+        String path = _apiUrl + "/User/AcceptPlayRequest/" + requestingUserId;
+        return _getStdResponseFromPost(user, path);
+    }
 
-        StdResponse stdResponse = null;
-
-        try
-        {
-            CloseableHttpResponse response = _client.execute(postRequest);
-            System.out.println(path + ": " + response.getStatusLine());
-
-            stdResponse = StdResponse.fromJson(_getStringFromInputStream(response.getEntity().getContent()));
-
-            response.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return stdResponse;
-
+    public StdResponse rejectIncomingPlayRequest(User user, int requestingUserId)
+    {
+        String path = _apiUrl + "/User/RejectPlayRequest/" + requestingUserId;
+        return _getStdResponseFromPost(user, path);
     }
 
     public List<PlayingPair> getIncomingPlayRequest(User user)
@@ -372,6 +363,32 @@ public class Api {
         }
 
         return playRequest;
+    }
+
+    private StdResponse _getStdResponseFromPost(User user, String path) {
+
+        StdResponse returnValue = new StdResponse();
+
+        HttpPost postRequest = new HttpPost(path);
+        postRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(postRequest);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            returnValue = StdResponse.fromJson(_getStringFromInputStream(response.getEntity().getContent()));
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            returnValue.success = false;
+            returnValue.message = e.getMessage();
+        }
+
+        return returnValue;
     }
 
     private String _getStringFromInputStream(InputStream inputStream)
