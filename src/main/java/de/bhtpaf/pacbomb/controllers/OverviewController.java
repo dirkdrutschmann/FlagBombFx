@@ -5,6 +5,8 @@ import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
+import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
+import de.bhtpaf.pacbomb.helper.responses.StdResponse;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -38,6 +40,8 @@ public class OverviewController
     private Scene _previousScene;
 
     private Timer _userListTimer = null;
+    private Timer _incomingPlayRequestsTimer = null;
+    private Timer _outgoingPlayRequestsTimer = null;
 
     @FXML
     public Label lb_user;
@@ -74,6 +78,12 @@ public class OverviewController
 
     @FXML
     public ListView lv_availablePlayers;
+
+    @FXML
+    public ListView lv_incomingRequest;
+
+    @FXML
+    public ListView lv_outgoingRequest;
 
     public void logoutUser(ActionEvent event)
     {
@@ -212,6 +222,9 @@ public class OverviewController
             }
         });
 
+        lv_incomingRequest.setCellFactory(param -> _getPlayRequestListCell(false));
+        lv_outgoingRequest.setCellFactory(param -> _getPlayRequestListCell(true));
+
         lv_availablePlayers.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
@@ -229,7 +242,34 @@ public class OverviewController
                         return;
                     }
 
-                    Util.showMessageBox(user.prename + " " + user.lastname + " (UserId: " + Integer.toString(user.id) + ")");
+                    Alert yesNoAlert = Util.getYesNoMessageBox("Soll eine Spieleanfrage an " + user.username + " gesendet werden?", "Spielanfrage senden?");
+                    yesNoAlert.showAndWait().ifPresent(type ->
+                    {
+                        if (type.getButtonData() == ButtonBar.ButtonData.YES)
+                        {
+                            // Anfrage senden
+                            System.out.println("Anfrage an UserId" + user.id + " senden");
+
+                            new Thread(() -> {
+                               StdResponse result = _api.sendPlayRequest(_user, user.id);
+
+                               if (result.success == false)
+                               {
+                                   Platform.runLater(() -> {
+                                       Util.showErrorMessageBox(result.message);
+                                   });
+                               }
+                               else
+                               {
+                                    Platform.runLater(() -> {
+                                        Util.showMessageBox(result.message);
+                                    });
+                               }
+                            }).start();
+
+                            yesNoAlert.close();
+                        }
+                    });
                 }
             }
         });
@@ -243,14 +283,37 @@ public class OverviewController
                 _userListTimer.cancel();
                 _userListTimer.purge();
 
-                System.out.println("UserList-Timer stopped");
+                System.out.println("UserList-Timer was stopped");
+            }
+
+            if (_incomingPlayRequestsTimer != null)
+            {
+                _incomingPlayRequestsTimer.cancel();
+                _incomingPlayRequestsTimer.purge();
+
+                System.out.println("IncomingRequest-Timer was stopped");
+            }
+
+            if (_outgoingPlayRequestsTimer != null)
+            {
+                _outgoingPlayRequestsTimer.cancel();
+                _outgoingPlayRequestsTimer.purge();
+
+                System.out.println("OutgoingRequest-Timer was stopped");
             }
 
             currentHandle.handle(ev);
         });
 
-
+        // Start timer for current logged in users
         _startUserListTimer();
+
+        // Start timer for incoming play request
+        _startIncomingPlayRequestTimer();
+
+        // Start timer for outgoing play request
+        _startOutgoingPlayRequestTimer();
+
     }
 
     private int _getValue(TextField edt, int stdValue)
@@ -348,6 +411,185 @@ public class OverviewController
                 }
             }
         }, new Date(), 5000);
+    }
+
+    private void _startIncomingPlayRequestTimer()
+    {
+        if (_incomingPlayRequestsTimer != null)
+        {
+            return;
+        }
+
+        _incomingPlayRequestsTimer = new Timer();
+
+        _incomingPlayRequestsTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (_user == null)
+                {
+                    return;
+                }
+
+                List<PlayingPair> incomingRequest = _api.getIncomingPlayRequest(_user);
+
+                if (incomingRequest == null)
+                {
+                    Platform.runLater(() -> {
+                        lv_incomingRequest.getItems().clear();
+                    });
+
+                    return;
+                }
+
+                boolean found = false;
+                for (PlayingPair pair : incomingRequest)
+                {
+                    found = false;
+                    for (Object listPair : lv_incomingRequest.getItems())
+                    {
+                        if (((PlayingPair)listPair).id == pair.id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        continue;
+                    }
+
+                    Platform.runLater(() -> {
+                        lv_incomingRequest.getItems().add(pair);
+                    });
+                }
+
+                Object[] items = lv_incomingRequest.getItems().toArray();
+                for (int i = 0; i < items.length; i++)
+                {
+                    found = false;
+                    for (PlayingPair pair : incomingRequest)
+                    {
+                        if (pair.id == ((PlayingPair)items[i]).id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        int finalI = i;
+                        Platform.runLater(() -> {
+                            lv_incomingRequest.getItems().remove(finalI);
+                        });
+                    }
+                }
+            }
+        }, new Date(), 2500);
+    }
+
+    private void _startOutgoingPlayRequestTimer()
+    {
+        if (_outgoingPlayRequestsTimer != null)
+        {
+            return;
+        }
+
+        _outgoingPlayRequestsTimer = new Timer();
+
+        _outgoingPlayRequestsTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (_user == null)
+                {
+                    return;
+                }
+
+                List<PlayingPair> outgoingRequest = _api.getOutgoingPlayRequest(_user);
+
+                if (outgoingRequest == null)
+                {
+                    Platform.runLater(() -> {
+                        lv_outgoingRequest.getItems().clear();
+                    });
+
+                    return;
+                }
+
+                boolean found = false;
+                for (PlayingPair pair : outgoingRequest)
+                {
+                    found = false;
+                    for (Object listPair : lv_outgoingRequest.getItems())
+                    {
+                        if (((PlayingPair)listPair).id == pair.id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                    {
+                        continue;
+                    }
+
+                    Platform.runLater(() -> {
+                        lv_outgoingRequest.getItems().add(pair);
+                    });
+                }
+
+                Object[] items = lv_outgoingRequest.getItems().toArray();
+                for (int i = 0; i < items.length; i++)
+                {
+                    found = false;
+                    for (PlayingPair pair : outgoingRequest)
+                    {
+                        if (pair.id == ((PlayingPair)items[i]).id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        int finalI = i;
+                        Platform.runLater(() -> {
+                            lv_outgoingRequest.getItems().remove(finalI);
+                        });
+                    }
+                }
+            }
+        }, new Date(), 2500);
+    }
+
+    private ListCell<PlayingPair> _getPlayRequestListCell(boolean outgoing)
+    {
+        return new ListCell<PlayingPair>() {
+            @Override
+            protected void updateItem(PlayingPair item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.id == null)
+                {
+                    setText(null);
+                    setGraphic(null);
+                }
+                else
+                {
+                    String txt = "Anfrage von ";
+
+                    if (outgoing)
+                    {
+                        txt = "Anfrage an ";
+                    }
+
+                    setText(txt + item.requestingUser.username);
+                }
+            }
+        };
     }
 
     private void _setFormLoading(boolean startLoading)

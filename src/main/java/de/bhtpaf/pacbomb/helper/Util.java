@@ -1,6 +1,7 @@
 package de.bhtpaf.pacbomb.helper;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 
@@ -20,6 +21,26 @@ public class Util
     {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         _showAlert(alert, msg);
+    }
+
+    public static Alert getYesNoMessageBox(String msg, String title)
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        if (title == null)
+        {
+            title = "Information";
+        }
+
+        alert.setTitle(title);
+        alert.setContentText(msg);
+
+        ButtonType yesButton = new ButtonType("Ja", ButtonBar.ButtonData.YES);
+        ButtonType noButton = new ButtonType("Nein", ButtonBar.ButtonData.NO);
+
+        alert.getButtonTypes().setAll(yesButton, noButton);
+        return alert;
+
     }
 
     private static void _showAlert(Alert alert, String msg)

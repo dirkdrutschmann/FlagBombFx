@@ -54,7 +54,7 @@ public class User
         return gson.toJson(this);
     }
 
-    public static User CreateFromJson(String json)
+    public static User createFromJson(String json)
     {
         return new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create().fromJson(json, User.class);
     }

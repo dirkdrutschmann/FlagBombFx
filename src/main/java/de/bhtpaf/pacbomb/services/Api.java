@@ -5,6 +5,8 @@ import de.bhtpaf.pacbomb.helper.classes.JWT;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.classes.map.Grid;
 import de.bhtpaf.pacbomb.helper.requests.HttpGetWithEntity;
+import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
+import de.bhtpaf.pacbomb.helper.responses.StdResponse;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -52,7 +54,7 @@ public class Api {
             if (response.getStatusLine().getStatusCode() == 200)
             {
                 String result = _getStringFromInputStream(responseEntity.getContent());
-                newUser = User.CreateFromJson(result);
+                newUser = User.createFromJson(result);
             }
 
             EntityUtils.consume(responseEntity);
@@ -118,7 +120,7 @@ public class Api {
             if (response.getStatusLine().getStatusCode() == 200)
             {
                 String result = _getStringFromInputStream(responseEntity.getContent());
-                loggedInUser = User.CreateFromJson(result);
+                loggedInUser = User.createFromJson(result);
                 loggedInUser.jwtToken = jwtToken;
             }
 
@@ -195,9 +197,11 @@ public class Api {
 
                 for (JsonElement e : jsonArray)
                 {
-                    loggedInUsers.add(User.CreateFromJson(e.toString()));
+                    loggedInUsers.add(User.createFromJson(e.toString()));
                 }
             }
+
+            response.close();
 
         }
         catch (Exception e)
@@ -250,6 +254,45 @@ public class Api {
         return "ws://" + uri.getAuthority() + uri.getPath() + "/ws";
     }
 
+    public StdResponse sendPlayRequest(User requestingUser, int requestedUserId)
+    {
+        String path = _apiUrl + "/user/PlayRequest/" + requestedUserId;
+        HttpPost postRequest = new HttpPost(path);
+
+        postRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + requestingUser.jwtToken.token);
+
+        StdResponse stdResponse = null;
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(postRequest);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            stdResponse = StdResponse.fromJson(_getStringFromInputStream(response.getEntity().getContent()));
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return stdResponse;
+
+    }
+
+    public List<PlayingPair> getIncomingPlayRequest(User user)
+    {
+        String path = _apiUrl + "/User/PlayRequest/Incoming";
+        return _getPlayRequest(path, user);
+    }
+
+    public List<PlayingPair> getOutgoingPlayRequest(User user)
+    {
+        String path = _apiUrl + "/User/PlayRequest/Outgoing";
+        return _getPlayRequest(path, user);
+    }
+
     public boolean existsMail(String mail)
     {
         return _getBooleanGetRequest(_apiUrl + "/register/mail/" + mail);
@@ -294,6 +337,41 @@ public class Api {
         }
 
         return grid;
+    }
+
+    private List<PlayingPair> _getPlayRequest(String path, User user)
+    {
+        HttpGet getRequest = new HttpGet(path);
+
+        List<PlayingPair> playRequest = new ArrayList<>();
+
+        getRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(getRequest);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                String result = _getStringFromInputStream(response.getEntity().getContent());
+
+                JsonArray pairsJson = JsonParser.parseString(result).getAsJsonArray();
+
+                for (JsonElement e : pairsJson)
+                {
+                    playRequest.add(PlayingPair.createFromJson(e.toString()));
+                }
+            }
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return playRequest;
     }
 
     private String _getStringFromInputStream(InputStream inputStream)
