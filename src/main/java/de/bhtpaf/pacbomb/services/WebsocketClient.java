@@ -10,6 +10,7 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
+import java.io.IOException;
 import java.net.URI;
 
 @ClientEndpoint
@@ -33,6 +34,23 @@ public class WebsocketClient
         }
 
         System.out.println(endpointURI.toString() + ": WebSocket init");
+    }
+
+    public boolean isOpen()
+    {
+        return userSession.isOpen();
+    }
+
+    public void close()
+    {
+        try
+        {
+            userSession.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @OnOpen

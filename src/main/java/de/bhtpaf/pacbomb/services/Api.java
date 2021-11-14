@@ -252,7 +252,6 @@ public class Api {
     {
         URI uri = URI.create(_apiUrl);
         return "ws://" + uri.getAuthority() + uri.getPath() + "/game/ws/" + pairId + "/" + Integer.toString(userId);
-        //return _apiUrl + + "/ws/" + pairId + "/" + Integer.toString(userId);
     }
 
     public StdResponse sendPlayRequest(User requestingUser, int requestedUserId)
@@ -283,6 +282,33 @@ public class Api {
     {
         String path = _apiUrl + "/User/PlayRequest/Outgoing";
         return _getPlayRequest(path, user);
+    }
+
+    public boolean isPlayingPartnerConnected(User user, PlayingPair pair)
+    {
+        String path = _apiUrl + "/Game/isPartnerConnected/" + pair.id;
+        HttpGet getRequest = new HttpGet(path);
+
+        getRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        StdResponse returnValue;
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(getRequest);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            returnValue = StdResponse.fromJson(_getStringFromInputStream(response.getEntity().getContent()));
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
+        return returnValue.success;
     }
 
     public boolean existsMail(String mail)

@@ -5,7 +5,6 @@ import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
 import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
-import de.bhtpaf.pacbomb.helper.interfaces.MessageHandler;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPairStatus;
 import de.bhtpaf.pacbomb.helper.responses.StdResponse;
@@ -22,6 +21,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.net.URI;
@@ -47,6 +47,8 @@ public class OverviewController
     private Timer _incomingPlayRequestsTimer = null;
     private Timer _outgoingPlayRequestsTimer = null;
 
+    private Thread _waitingForPartnerThread = null;
+
     private WebsocketClient _wsClient = null;
 
     @FXML
@@ -57,6 +59,9 @@ public class OverviewController
 
     @FXML
     public BorderPane img_pane;
+
+    @FXML
+    public Button bt_logoff;
 
     @FXML
     public TextField edt_game_speed;
@@ -90,6 +95,15 @@ public class OverviewController
 
     @FXML
     public ListView lv_outgoingRequest;
+
+    @FXML
+    public StackPane sp_overlay;
+
+    @FXML
+    public ImageView img_waiting_logo;
+
+    @FXML
+    public Label lb_waiting_text;
 
     public void logoutUser(ActionEvent event)
     {
@@ -159,6 +173,17 @@ public class OverviewController
         }).start();
     }
 
+    public void stopWaiting(ActionEvent event)
+    {
+        event.consume();
+        if (_waitingForPartnerThread == null || !_waitingForPartnerThread.isAlive() || _waitingForPartnerThread.isInterrupted())
+        {
+            return;
+        }
+
+        _waitingForPartnerThread.interrupt();
+    }
+
     public void setUser(User user)
     {
         _user = user;
@@ -193,6 +218,11 @@ public class OverviewController
         if (img_logo.getImage() == null)
         {
             img_logo.setImage(new Image(PacBomb.class.getResourceAsStream("icons/logo.png")));
+        }
+
+        if (img_waiting_logo.getImage() == null)
+        {
+            img_waiting_logo.setImage(new Image(PacBomb.class.getResourceAsStream("icons/logo.png")));
         }
 
         edt_game_speed.textProperty().set(Integer.toString(_stdGameSpeed));
@@ -252,6 +282,18 @@ public class OverviewController
                 _outgoingPlayRequestsTimer.purge();
 
                 System.out.println("OutgoingRequest-Timer was stopped");
+            }
+
+            if (_waitingForPartnerThread != null && _waitingForPartnerThread.isAlive())
+            {
+                _waitingForPartnerThread.interrupt();
+                System.out.println("Waiting-Thread was interrupted");
+            }
+
+            if (_wsClient != null && _wsClient.isOpen())
+            {
+                _wsClient.close();
+                System.out.println("Waiting-Thread was closed");
             }
 
             currentHandle.handle(ev);
@@ -370,12 +412,8 @@ public class OverviewController
                                 if (_wsClient == null)
                                 {
                                     _wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl(pair.id, _user.id)));
+                                    checkPartnerConnectionAsync(pair);
                                 }
-
-                                Platform.runLater(() ->
-                                {
-                                    Util.showMessageBox(response.message);
-                                });
                             }
                             else
                             {
@@ -413,6 +451,71 @@ public class OverviewController
                 });
             }
         };
+    }
+
+    private void checkPartnerConnectionAsync(PlayingPair pair)
+    {
+        _waitingForPartnerThread = new Thread(() -> {
+            boolean isConnected = false;
+
+            Platform.setImplicitExit(false);
+
+            Platform.runLater(() -> {
+                _disableForm(true, true);
+                sp_overlay.visibleProperty().set(true);
+            });
+
+            String points = "";
+            int i = 0;
+
+            // 120 Schleifendurchläufe = 60 Sekunden
+            while (!isConnected || i > 60)
+            {
+                try
+                {
+                    for (int k = 0; k <= i % 5; k++)
+                    {
+                        if (k == 0)
+                        {
+                            points = ".";
+                        }
+                        else
+                        {
+                            points += ".";
+                        }
+                    }
+
+                    String finalPoints = points;
+                    Platform.runLater(() -> {
+                        lb_waiting_text.textProperty().set("Warten auf Spieler" + finalPoints);
+                    });
+
+                    isConnected = _api.isPlayingPartnerConnected(_user, pair);
+
+                    i++;
+
+                    Thread.sleep(1000);
+                }
+                catch (Exception e)
+                {
+                    Platform.runLater(() -> {
+                        sp_overlay.visibleProperty().set(false);
+                        _disableForm(false, true);
+                        return;
+                    });
+                }
+            }
+
+            Platform.runLater(() -> {
+                sp_overlay.visibleProperty().set(false);
+                _disableForm(false, true);
+                Util.showMessageBox("WebSocket durch Partner erolgreich initialisert");
+            });
+
+            Platform.setImplicitExit(true);
+        });
+
+        _waitingForPartnerThread.start();
     }
 
     private int _getValue(TextField edt, int stdValue)
@@ -698,11 +801,7 @@ public class OverviewController
 
     private void _setFormLoading(boolean startLoading, String loadingText)
     {
-        bt_game_start.setDisable(startLoading);
-        edt_game_speed.setDisable(startLoading);
-        edt_game_bombs.setDisable(startLoading);
-        edt_game_width.setDisable(startLoading);
-        edt_game_squareFactor.setDisable(startLoading);
+        _disableForm(startLoading, false);
 
         if (startLoading && img_loading.getImage() == null)
         {
@@ -717,5 +816,19 @@ public class OverviewController
         }
 
         lb_loading.setVisible(startLoading);
+    }
+
+    private void _disableForm(boolean isDisabled, boolean withLogoffButton)
+    {
+        bt_game_start.setDisable(isDisabled);
+        edt_game_speed.setDisable(isDisabled);
+        edt_game_bombs.setDisable(isDisabled);
+        edt_game_width.setDisable(isDisabled);
+        edt_game_squareFactor.setDisable(isDisabled);
+
+        if (withLogoffButton)
+        {
+            bt_logoff.setDisable(isDisabled);
+        }
     }
 }
