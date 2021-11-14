@@ -4,7 +4,10 @@ import de.bhtpaf.pacbomb.PacBomb;
 import de.bhtpaf.pacbomb.helper.Game;
 import de.bhtpaf.pacbomb.helper.Util;
 import de.bhtpaf.pacbomb.helper.classes.User;
+import de.bhtpaf.pacbomb.helper.classes.map.Grid;
+import de.bhtpaf.pacbomb.helper.interfaces.GameOverListener;
 import de.bhtpaf.pacbomb.helper.interfaces.LogoutEventListener;
+import de.bhtpaf.pacbomb.helper.interfaces.MapGeneratedListener;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
 import de.bhtpaf.pacbomb.helper.responses.PlayingPairStatus;
 import de.bhtpaf.pacbomb.helper.responses.StdResponse;
@@ -28,8 +31,10 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class OverviewController
+public class OverviewController implements MapGeneratedListener, GameOverListener
 {
+    private boolean _StopAllThreads = false;
+    private boolean _StopWaitingForPartnerThread = false;
 
     private List<LogoutEventListener> _logoutEventListeners = new ArrayList<>();
 
@@ -37,6 +42,9 @@ public class OverviewController
     private final int _stdGameWidth = 1000;
     private final int _stdGameSquareFactor = 30;
     private final int _stdGameBombs = 10;
+
+    private Grid _mapGeneratedByWebSocket = null;
+    private PlayingPair _playingPair = null;
 
     private User _user;
     private Stage _mainStage;
@@ -142,7 +150,7 @@ public class OverviewController
         int squareFactor = _getValue(edt_game_squareFactor, _stdGameSquareFactor);
         int bombs = _getValue(edt_game_bombs, _stdGameBombs);
 
-        Game game = new Game(_api, _mainStage, _user, speed, width, squareFactor, bombs);
+        Game game = new Game(_api, _mainStage, _user, speed, width, squareFactor, bombs, _mapGeneratedByWebSocket, _playingPair);
 
         new Thread(() -> {
             try
@@ -158,11 +166,14 @@ public class OverviewController
                 });
             }
 
+            game.addOnGameOverListener(this::onGameOver);
+
             Platform.runLater(() -> {
                 _setFormLoading(false);
 
                 try
                 {
+                    _stopAllTimers();
                     game.show();
                 }
                 catch (Exception e)
@@ -176,12 +187,7 @@ public class OverviewController
     public void stopWaiting(ActionEvent event)
     {
         event.consume();
-        if (_waitingForPartnerThread == null || !_waitingForPartnerThread.isAlive() || _waitingForPartnerThread.isInterrupted())
-        {
-            return;
-        }
-
-        _waitingForPartnerThread.interrupt();
+        _StopWaitingForPartnerThread = true;
     }
 
     public void setUser(User user)
@@ -255,59 +261,47 @@ public class OverviewController
         // Click Event
         lv_availablePlayers.setOnMouseClicked(_getAvailablePlayersOnMouseClickedHandler());
         lv_incomingRequest.setOnMouseClicked(_getIncomingRequestOnMouseClickHandler());
+        lv_outgoingRequest.setOnMouseClicked(_getOutgoingRequestOnMouseClickHandler());
 
         EventHandler currentHandle = _mainStage.getOnCloseRequest();
 
         _mainStage.setOnCloseRequest(ev -> {
+            _stopAllTimers();
 
-            if (_userListTimer != null)
-            {
-                _userListTimer.cancel();
-                _userListTimer.purge();
-
-                System.out.println("UserList-Timer was stopped");
-            }
-
-            if (_incomingPlayRequestsTimer != null)
-            {
-                _incomingPlayRequestsTimer.cancel();
-                _incomingPlayRequestsTimer.purge();
-
-                System.out.println("IncomingRequest-Timer was stopped");
-            }
-
-            if (_outgoingPlayRequestsTimer != null)
-            {
-                _outgoingPlayRequestsTimer.cancel();
-                _outgoingPlayRequestsTimer.purge();
-
-                System.out.println("OutgoingRequest-Timer was stopped");
-            }
-
-            if (_waitingForPartnerThread != null && _waitingForPartnerThread.isAlive())
-            {
-                _waitingForPartnerThread.interrupt();
-                System.out.println("Waiting-Thread was interrupted");
-            }
+            _StopAllThreads = true;
+            System.out.println("StopAllThreads was set to true.");
 
             if (_wsClient != null && _wsClient.isOpen())
             {
                 _wsClient.close();
-                System.out.println("Waiting-Thread was closed");
+                System.out.println("WebSocket was closed");
             }
 
             currentHandle.handle(ev);
         });
 
-        // Start timer for current logged in users
-        _startUserListTimer();
+        _startAllTimers();
 
-        // Start timer for incoming play request
-        _startIncomingPlayRequestTimer();
+    }
 
-        // Start timer for outgoing play request
-        _startOutgoingPlayRequestTimer();
+    @Override
+    public void onMapGenerated(Grid map)
+    {
+        _mapGeneratedByWebSocket = map;
+    }
 
+    @Override
+    public void onGameOver(PlayingPair pair)
+    {
+        if (_wsClient.isOpen())
+        {
+            _wsClient.close();
+            _wsClient = null;
+        }
+
+        _api.setGameOverStatus(_user, pair);
+
+        _startAllTimers();
     }
 
     private EventHandler<MouseEvent> _getAvailablePlayersOnMouseClickedHandler()
@@ -337,21 +331,29 @@ public class OverviewController
                         if (type.getButtonData() == ButtonBar.ButtonData.YES)
                         {
                             // Anfrage senden
-                            System.out.println("Anfrage an UserId" + user.id + " senden");
+                            System.out.println("Anfrage an UserId " + user.id + " senden");
 
                             new Thread(() -> {
-                                StdResponse result = _api.sendPlayRequest(_user, user.id);
+                                Grid mapConfig = new Grid(
+                                        _getValue(edt_game_width, _stdGameWidth),
+                                        _getValue(edt_game_width, _stdGameWidth),
+                                        _getValue(edt_game_squareFactor, _stdGameSquareFactor)
+                                );
 
-                                if (result.success == false)
+                                StdResponse result = _api.sendPlayRequest(_user, user.id, mapConfig);
+
+                                if (result.success)
                                 {
                                     Platform.runLater(() -> {
-                                        Util.showErrorMessageBox(result.message);
+                                        Util.showMessageBox(result.message);
                                     });
+
+
                                 }
                                 else
                                 {
                                     Platform.runLater(() -> {
-                                        Util.showMessageBox(result.message);
+                                        Util.showErrorMessageBox(result.message);
                                     });
                                 }
                             }).start();
@@ -409,11 +411,8 @@ public class OverviewController
 
                             if (response.success)
                             {
-                                if (_wsClient == null)
-                                {
-                                    _wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl(pair.id, _user.id)));
-                                    checkPartnerConnectionAsync(pair);
-                                }
+                                _connectToWebSocket(pair);
+                                _checkPartnerConnectionAsync(pair);
                             }
                             else
                             {
@@ -453,8 +452,57 @@ public class OverviewController
         };
     }
 
-    private void checkPartnerConnectionAsync(PlayingPair pair)
+    private EventHandler<MouseEvent> _getOutgoingRequestOnMouseClickHandler()
     {
+        return new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent event)
+            {
+                if(event.getButton() != MouseButton.PRIMARY || event.getClickCount() == 2)
+                {
+                    return;
+                }
+
+                if (lv_outgoingRequest.getItems().size() == 0)
+                {
+                    return;
+                }
+
+                PlayingPair pair = (PlayingPair)lv_outgoingRequest.getSelectionModel().getSelectedItem();
+
+                if (pair == null)
+                {
+                    return;
+                }
+
+                if (pair.status != PlayingPairStatus.ACCEPTED)
+                {
+                    return;
+                }
+
+                List<ButtonType> buttons = new ArrayList<>();
+                buttons.add(new ButtonType("Spiel starten", ButtonBar.ButtonData.YES));
+                buttons.add(new ButtonType("Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE));
+
+                Alert gameStartAlert = Util.getCustomMessageBox("Spiel mit " + pair.requestedUser.username + " starten?", "Spiel starten?", buttons);
+                gameStartAlert.showAndWait().ifPresent(type ->
+                {
+                    if (type.getButtonData() == ButtonBar.ButtonData.YES)
+                    {
+                        _connectToWebSocket(pair);
+                        _checkPartnerConnectionAsync(pair);
+                    }
+                    gameStartAlert.close();
+                });
+            }
+        };
+    }
+
+    private void _checkPartnerConnectionAsync(PlayingPair pair)
+    {
+        _StopWaitingForPartnerThread = false;
+
         _waitingForPartnerThread = new Thread(() -> {
             boolean isConnected = false;
 
@@ -468,8 +516,14 @@ public class OverviewController
             String points = "";
             int i = 0;
 
-            while (!isConnected || i > 60)
+            while (!isConnected && i < 60 && !_StopWaitingForPartnerThread)
             {
+                // Exit Thread
+                if (_StopAllThreads)
+                {
+                    return;
+                }
+
                 try
                 {
                     for (int k = 0; k <= i % 5; k++)
@@ -505,11 +559,38 @@ public class OverviewController
                 }
             }
 
-            Platform.runLater(() -> {
-                sp_overlay.visibleProperty().set(false);
-                _disableForm(false, true);
-                Util.showMessageBox("WebSocket durch Partner erolgreich initialisert");
-            });
+            if (isConnected)
+            {
+                // Max 30 Sekunden auf Map warten
+                i = 0;
+                while (_mapGeneratedByWebSocket == null && i < 60)
+                {
+                    try
+                    {
+                        i++;
+                        Thread.sleep(500);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
+                Platform.runLater(() -> {
+                    sp_overlay.visibleProperty().set(false);
+                    _disableForm(false, true);
+
+                    if (_mapGeneratedByWebSocket != null)
+                    {
+                        _playingPair = pair;
+                        startGame(new ActionEvent());
+                    }
+                    else
+                    {
+                        Util.showErrorMessageBox("Map konnte nicht geladen werden!");
+                    }
+                });
+            }
 
             Platform.setImplicitExit(true);
         });
@@ -566,17 +647,25 @@ public class OverviewController
                     return;
                 }
 
-                boolean found = false;
+                boolean found;
                 for (User user : loggedInUsers)
                 {
                     found = false;
+                    int i = 0;
                     for (Object listUser : lv_availablePlayers.getItems())
                     {
                         if (((User)listUser).id == user.id)
                         {
                             found = true;
+                            int finalI = i;
+                            Platform.runLater(() ->
+                            {
+                                lv_availablePlayers.getItems().set(finalI, user);
+                            });
+
                             break;
                         }
+                        i++;
                     }
 
                     if (found)
@@ -646,13 +735,21 @@ public class OverviewController
                 for (PlayingPair pair : incomingRequest)
                 {
                     found = false;
+                    int i = 0;
                     for (Object listPair : lv_incomingRequest.getItems())
                     {
-                        if (((PlayingPair)listPair).id == pair.id)
+                        if (((PlayingPair)listPair).id.equals(pair.id))
                         {
                             found = true;
+                            int finalI = i;
+                            Platform.runLater(()->
+                            {
+                                lv_incomingRequest.getItems().set(finalI, pair);
+                            });
                             break;
                         }
+
+                        i++;
                     }
 
                     if (found)
@@ -671,7 +768,7 @@ public class OverviewController
                     found = false;
                     for (PlayingPair pair : incomingRequest)
                     {
-                        if (pair.id == ((PlayingPair)items[i]).id)
+                        if (pair.id.equals(((PlayingPair)items[i]).id))
                         {
                             found = true;
                             break;
@@ -718,17 +815,26 @@ public class OverviewController
                     return;
                 }
 
-                boolean found = false;
+                boolean found;
                 for (PlayingPair pair : outgoingRequest)
                 {
                     found = false;
+                    int i = 0;
                     for (Object listPair : lv_outgoingRequest.getItems())
                     {
-                        if (((PlayingPair)listPair).id == pair.id)
+                        if (((PlayingPair)listPair).id.equals(pair.id))
                         {
                             found = true;
+
+                            int finalI = i;
+                            Platform.runLater(() ->
+                            {
+                                lv_outgoingRequest.getItems().set(finalI, pair);
+                            });
                             break;
                         }
+
+                        i++;
                     }
 
                     if (found)
@@ -747,7 +853,7 @@ public class OverviewController
                     found = false;
                     for (PlayingPair pair : outgoingRequest)
                     {
-                        if (pair.id == ((PlayingPair)items[i]).id)
+                        if (pair.id.equals(((PlayingPair)items[i]).id))
                         {
                             found = true;
                             break;
@@ -764,6 +870,48 @@ public class OverviewController
                 }
             }
         }, new Date(), 2500);
+    }
+
+    private void _startAllTimers()
+    {
+        // Start timer for current logged in users
+        _startUserListTimer();
+
+        // Start timer for incoming play request
+        _startIncomingPlayRequestTimer();
+
+        // Start timer for outgoing play request
+        _startOutgoingPlayRequestTimer();
+    }
+
+    private void _stopAllTimers()
+    {
+        if (_userListTimer != null)
+        {
+            _userListTimer.cancel();
+            _userListTimer.purge();
+            _userListTimer = null;
+
+            System.out.println("UserList-Timer was stopped");
+        }
+
+        if (_incomingPlayRequestsTimer != null)
+        {
+            _incomingPlayRequestsTimer.cancel();
+            _incomingPlayRequestsTimer.purge();
+            _incomingPlayRequestsTimer = null;
+
+            System.out.println("IncomingRequest-Timer was stopped");
+        }
+
+        if (_outgoingPlayRequestsTimer != null)
+        {
+            _outgoingPlayRequestsTimer.cancel();
+            _outgoingPlayRequestsTimer.purge();
+            _outgoingPlayRequestsTimer = null;
+
+            System.out.println("OutgoingRequest-Timer was stopped");
+        }
     }
 
     private ListCell<PlayingPair> _getPlayRequestListCell(boolean outgoing)
@@ -784,7 +932,7 @@ public class OverviewController
 
                     if (outgoing)
                     {
-                        txt = "Anfrage an " + item.requestedUser.username;
+                        txt = "Anfrage an " + item.requestedUser.username + (item.status == PlayingPairStatus.ACCEPTED ? " (Angenommen)" : "");
                     }
 
                     setText(txt);
@@ -829,5 +977,16 @@ public class OverviewController
         {
             bt_logoff.setDisable(isDisabled);
         }
+    }
+
+    private void _connectToWebSocket(PlayingPair pair)
+    {
+        if (_wsClient != null)
+        {
+            _wsClient.close();
+        }
+
+        _wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl(pair.id, _user.id)));
+        _wsClient.addMapGeneratedListener(this::onMapGenerated);
     }
 }

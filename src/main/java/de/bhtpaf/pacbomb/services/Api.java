@@ -254,10 +254,12 @@ public class Api {
         return "ws://" + uri.getAuthority() + uri.getPath() + "/game/ws/" + pairId + "/" + Integer.toString(userId);
     }
 
-    public StdResponse sendPlayRequest(User requestingUser, int requestedUserId)
+    public StdResponse sendPlayRequest(User requestingUser, int requestedUserId, Grid mapConfig)
     {
         String path = _apiUrl + "/user/PlayRequest/" + requestedUserId;
-        return _getStdResponseFromPost(requestingUser, path);
+        StringEntity entity = new StringEntity(mapConfig.toJson(), ContentType.APPLICATION_JSON);
+
+        return _getStdResponseFromPost(requestingUser, path, entity);
     }
 
     public StdResponse acceptIncomingPlayRequest(User user, int requestingUserId)
@@ -357,6 +359,12 @@ public class Api {
         return grid;
     }
 
+    public boolean setGameOverStatus(User user, PlayingPair pair)
+    {
+        String path = _apiUrl + "/Game/setGameOver/" + pair.id;
+        return _getStdResponseFromPost(user, path).success;
+    }
+
     private List<PlayingPair> _getPlayRequest(String path, User user)
     {
         HttpGet getRequest = new HttpGet(path);
@@ -392,12 +400,22 @@ public class Api {
         return playRequest;
     }
 
-    private StdResponse _getStdResponseFromPost(User user, String path) {
+    private StdResponse _getStdResponseFromPost(User user, String path)
+    {
+        return _getStdResponseFromPost(user, path, null);
+    }
+
+    private StdResponse _getStdResponseFromPost(User user, String path, StringEntity entity) {
 
         StdResponse returnValue = new StdResponse();
 
         HttpPost postRequest = new HttpPost(path);
         postRequest.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        if (entity != null)
+        {
+            postRequest.setEntity(entity);
+        }
 
         try
         {

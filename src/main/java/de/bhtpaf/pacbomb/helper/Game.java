@@ -6,6 +6,8 @@ import de.bhtpaf.pacbomb.helper.classes.map.*;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.pacbomb.helper.classes.map.items.Gem;
+import de.bhtpaf.pacbomb.helper.interfaces.GameOverListener;
+import de.bhtpaf.pacbomb.helper.responses.PlayingPair;
 import de.bhtpaf.pacbomb.services.Api;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -25,13 +27,15 @@ import java.util.*;
 
 public class Game
 {
+    List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
     private final Scene _previousScene;
     private final Stage _mainStage;
     private final Api _api;
+    private final PlayingPair _playingPair;
+    private final User _user;
 
     private Scene _gameScene = null;
-    private User _user = null;
 
     private final int _speed;
     private final int fontSizeTop = 20;
@@ -59,11 +63,12 @@ public class Game
     private Bombs _bombList;
     private List<Gem> gemList = new ArrayList();
     
-    public Game(Api api, Stage stage, User user, int speed, int width, int squareFactor, int bombs)
+    public Game(Api api, Stage stage, User user, int speed, int width, int squareFactor, int bombs, Grid grid, PlayingPair pair)
     {
         _api = api;
         _previousScene = stage.getScene();
         _mainStage = stage;
+        _playingPair = pair;
         _user = user;
 
         _speed = speed;
@@ -73,15 +78,14 @@ public class Game
 
         _height = _width;
         _bomberManSize = _width / _squareFactor;
+
+        _grid = grid;
     }
 
     public void init()
     {
         try
         {
-            _grid = new Grid (_width, _height, _squareFactor);
-            _grid = _api.getGrid(_grid, _user);
-
             _bomberManSize = _squareFactor;
 
             _players = new ArrayList<>();
@@ -152,6 +156,12 @@ public class Game
                                 new TimerTask() {
                                     @Override
                                     public void run() {
+                                        // Raise GameOver-Event
+                                        for (GameOverListener listener : _gameOverListeners)
+                                        {
+                                            listener.onGameOver(_playingPair);
+                                        }
+
                                         Platform.runLater(() -> {
                                             _mainStage.setMinHeight(639);
                                             _mainStage.setMaxHeight(639);
@@ -245,6 +255,11 @@ public class Game
         _mainStage.setMaxWidth(_width + 16);
 
         _mainStage.setScene(_gameScene);
+    }
+
+    public void addOnGameOverListener(GameOverListener listener)
+    {
+        _gameOverListeners.add(listener);
     }
 
     private void _tick(GraphicsContext gc)

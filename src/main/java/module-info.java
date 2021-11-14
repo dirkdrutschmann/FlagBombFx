@@ -14,6 +14,7 @@ module de.bhtpaf.pacbomb {
     requires org.apache.httpcomponents.httpcore;
     requires com.google.gson;
     requires javax.websocket.client.api;
+    requires tyrus.websocket.core;
 
     exports de.bhtpaf.pacbomb;
     exports de.bhtpaf.pacbomb.controllers;

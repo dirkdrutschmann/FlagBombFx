@@ -2,7 +2,6 @@ package de.bhtpaf.pacbomb.helper.classes.map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
 import de.bhtpaf.pacbomb.helper.Dir;
 import de.bhtpaf.pacbomb.helper.classes.json.JsonDeserializerWithInheritance;
 import javafx.scene.canvas.GraphicsContext;
