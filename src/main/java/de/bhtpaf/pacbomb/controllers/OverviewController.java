@@ -468,7 +468,6 @@ public class OverviewController
             String points = "";
             int i = 0;
 
-            // 120 Schleifendurchläufe = 60 Sekunden
             while (!isConnected || i > 60)
             {
                 try
