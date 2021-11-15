@@ -15,11 +15,12 @@ module de.bhtpaf.pacbomb {
     requires com.google.gson;
     requires javax.websocket.client.api;
     requires tyrus.websocket.core;
+    requires java.desktop;
 
-    exports de.bhtpaf.pacbomb;
-    exports de.bhtpaf.pacbomb.controllers;
-    exports de.bhtpaf.pacbomb.services;
-    exports de.bhtpaf.pacbomb.helper.classes;
-    exports de.bhtpaf.pacbomb.helper.classes.map;
-    exports de.bhtpaf.pacbomb.helper.responses;
+    exports de.bhtpaf.flagbomb;
+    exports de.bhtpaf.flagbomb.controllers;
+    exports de.bhtpaf.flagbomb.services;
+    exports de.bhtpaf.flagbomb.helper.classes;
+    exports de.bhtpaf.flagbomb.helper.classes.map;
+    exports de.bhtpaf.flagbomb.helper.responses;
 }
