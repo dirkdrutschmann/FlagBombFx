@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.Pane?>
 
 <AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.bhtpaf.flagbomb.controllers.RegisterUserController">
-    <Pane onMouseClicked="#filePicker" prefHeight="600.0" prefWidth="1000.0">
+    <Pane prefHeight="600.0" prefWidth="1000.0" onDragExited="#dragDropped">
         <Label layoutX="400.0" layoutY="30.0" text="Nutzername" />
         <TextField fx:id="edt_username" layoutX="400.0" layoutY="50.0" prefHeight="25.0" prefWidth="200.0" />
 
@@ -25,9 +25,10 @@
         <Label layoutX="400.0" layoutY="270.0" text="Passwort" />
         <PasswordField fx:id="edt_password" layoutX="400.0" layoutY="290.0" prefHeight="25.0" prefWidth="200.0" />
 
+        <Label layoutX="399.0" layoutY="322.0" text="Profilbild" />
+        <ImageView fx:id="filePickerImage" fitHeight="100.0" fitWidth="100.0" layoutX="455.0" layoutY="340.0" onMouseClicked="#filePicker"  pickOnBounds="true" preserveRatio="true" />
+
         <Button layoutX="400.0" layoutY="448.0" mnemonicParsing="false" onAction="#backToLogin" prefHeight="30.0" prefWidth="56.0" text="Zurück" />
         <Button layoutX="497.0" layoutY="448.0" mnemonicParsing="false" onAction="#registerUser" prefHeight="30.0" prefWidth="103.0" text="Registrieren" />
-      <Label layoutX="399.0" layoutY="322.0" text="Profilbild" />
-      <ImageView fx:id="filePickerImage" fitHeight="100.0" fitWidth="100.0" layoutX="455.0" layoutY="340.0" pickOnBounds="true" preserveRatio="true" />
     </Pane>
 </AnchorPane>
