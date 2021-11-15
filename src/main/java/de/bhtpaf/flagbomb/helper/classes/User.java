@@ -58,6 +58,7 @@ public class User
     {
         Gson gson = new Gson();
         return gson.toJson(this);
+
     }
 
     public static User createFromJson(String json)
