@@ -86,6 +86,11 @@ public class Game
     {
         try
         {
+            if (_grid == null)
+            {
+                _generateGrid();
+            }
+
             _bomberManSize = _squareFactor;
 
             _players = new ArrayList<>();
@@ -225,22 +230,6 @@ public class Game
         }
     }
 
-    public void generateGrid() throws Exception
-    {
-        if (_grid != null)
-        {
-            return;
-        }
-
-        if (_gameScene == null)
-        {
-            throw new Exception("Game nicht initialisiert");
-        }
-
-        _grid = new Grid (_width, _height, _squareFactor);
-        _grid = _api.getGrid(_grid, _user);
-    }
-
     public void show() throws Exception
     {
         if (_grid == null)
@@ -367,6 +356,17 @@ public class Game
             errorPlayer.setVolume(0.5);
             errorPlayer.play();
         }
+    }
+
+    private void _generateGrid() throws Exception
+    {
+        if (_grid != null)
+        {
+            return;
+        }
+
+        _grid = new Grid (_width, _height, _squareFactor);
+        _grid = _api.getGrid(_grid, _user);
     }
 
 }

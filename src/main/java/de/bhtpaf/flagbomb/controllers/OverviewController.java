@@ -156,7 +156,6 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
             try
             {
                 game.init();
-                game.generateGrid();
             }
             catch (Exception e)
             {
@@ -293,13 +292,14 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
     @Override
     public void onGameOver(PlayingPair pair)
     {
-        if (_wsClient.isOpen())
-        {
-            _wsClient.close();
-            _wsClient = null;
-        }
+        if (_wsClient != null) {
+            if (_wsClient.isOpen()) {
+                _wsClient.close();
+                _wsClient = null;
+            }
 
-        _api.setGameOverStatus(_user, pair);
+            _api.setGameOverStatus(_user, pair);
+        }
 
         _startAllTimers();
     }
