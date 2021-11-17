@@ -14,6 +14,8 @@ public class Bombs implements Collection<Bomb>
 
     private HashMap<String, Image[]> _bombImages = init();
 
+    private final Image[] _stateImage;
+
     private final Media _soundBoom = new Media(FlagBomb.class.getResource("sounds/boom.wav").toString());
 
     private final int _bombSize;
@@ -21,9 +23,10 @@ public class Bombs implements Collection<Bomb>
 
     private List<Bomb> _bombs = new ArrayList<>();
 
-    public Bombs (int bombSize)
+    public Bombs (int bombSize, String color)
     {
         _bombSize = bombSize;
+        _stateImage = _bombImages.get(color);
 
     }
 
@@ -65,13 +68,13 @@ public class Bombs implements Collection<Bomb>
         }
     }
 
-    public int placeOnGrid(Grid grid, int x, int y, BomberMan player)
+    public int placeOnGrid(Grid grid, int x, int y)
     {
         Square pos = grid.find(new Coord(x, y));
 
         if (pos != null)
         {
-            _bombs.add(new Bomb(pos, _bombImages.get(player.getOwnedFlag().getColor()), _soundBoom));
+            _bombs.add(new Bomb(pos, _stateImage, _soundBoom));
             return size();
         }
 
@@ -145,18 +148,21 @@ public class Bombs implements Collection<Bomb>
         _bombs.clear();
     }
 
-    private HashMap<String, Image[]> init (){
+    private HashMap<String, Image[]> init ()
+    {
         HashMap<String, Image[]> bombImages = new HashMap<String, Image[]>();
-        for(Flag.Color color : Flag.Color.values()){
+
+        for(Flag.Color color : Flag.Color.values())
+        {
             bombImages.put(color.toString(),  new Image[]
-                    {
-                            new Image(FlagBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb1.png")),
-                            new Image(FlagBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb2.png")),
-                            new Image(FlagBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb3.png")),
-                            new Image(FlagBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb4.png")),
-                            new Image(FlagBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb5.png")),
-                            new Image(FlagBomb.class.getResourceAsStream("bomb/"+color.toString()+"/bomb6.png"))
-                    });
+            {
+                new Image(FlagBomb.class.getResourceAsStream("bomb/" + color.toString() + "/bomb1.png")),
+                new Image(FlagBomb.class.getResourceAsStream("bomb/" + color.toString() + "/bomb2.png")),
+                new Image(FlagBomb.class.getResourceAsStream("bomb/" + color.toString() + "/bomb3.png")),
+                new Image(FlagBomb.class.getResourceAsStream("bomb/" + color.toString() + "/bomb4.png")),
+                new Image(FlagBomb.class.getResourceAsStream("bomb/" + color.toString() + "/bomb5.png")),
+                new Image(FlagBomb.class.getResourceAsStream("bomb/" + color.toString() + "/bomb6.png"))
+            });
         }
         return bombImages;
     }

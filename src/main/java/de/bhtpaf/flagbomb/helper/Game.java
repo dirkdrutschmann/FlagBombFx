@@ -60,7 +60,6 @@ public class Game
     private List<BomberMan> _players = null;
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
-    private Bombs _bombList;
     private List<Gem> gemList = new ArrayList();
     
     public Game(Api api, Stage stage, User user, int speed, int width, int squareFactor, int bombs, Grid grid, PlayingPair pair)
@@ -94,14 +93,16 @@ public class Game
             _bomberManSize = _squareFactor;
 
             _players = new ArrayList<>();
+
+            // Spieler 1
             _players.add(
                 new BomberMan(
                     0,
                     _squareFactor,
                     _bomberManSize,
                     new Flag(
-                        _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.x,
-                        _grid.columns.get((_grid.rowCount / 2) + 1).get(1).downLeft.y,
+                        _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.x,
+                        _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.y,
                         _bomberManSize,
                         Flag.Color.blue
                     ),
@@ -109,7 +110,21 @@ public class Game
                 )
             );
 
-            _bombList = new Bombs(_width / _squareFactor);
+            // Spieler zwei
+            _players.add(
+                new BomberMan(
+                    _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.x,
+                    _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.y,
+                    _bomberManSize,
+                    new Flag(
+                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
+                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
+                        _bomberManSize,
+                        Flag.Color.red
+                    ),
+                    _user.id
+                )
+            );
 
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
@@ -212,6 +227,7 @@ public class Game
                         if (player.id == _user.id)
                         {
                             _addBomb(player);
+                            break;
                         }
                     }
                 }
@@ -292,9 +308,9 @@ public class Game
         {
             player.draw(gc);
             player.getOwnedFlag().draw(gc);
-        }
 
-        _bombList.updateBombs(gc, _grid);
+            player.getBombs().updateBombs(gc, _grid);
+        }
 
         boolean collected = false;
         for (int i = 0; i < gemList.size(); i++)
@@ -345,7 +361,7 @@ public class Game
             int x = (player.square.downLeft.x + player.square.downRight.x) / 2;
             int y = (player.square.upperLeft.y + player.square.downLeft.y) / 2;
 
-            if (_bombList.placeOnGrid(_grid, x, y, player) > 0)
+            if (player.getBombs().placeOnGrid(_grid, x, y) > 0)
             {
                 _bombs--;
             }

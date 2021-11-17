@@ -1,6 +1,7 @@
 package de.bhtpaf.flagbomb.helper;
 
 import de.bhtpaf.flagbomb.FlagBomb;
+import de.bhtpaf.flagbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
 import javafx.scene.canvas.GraphicsContext;
@@ -14,6 +15,8 @@ public class BomberMan extends Item
 
     private final Flag _ownedFlag;
 
+    private Bombs _bombs;
+
     public final int id;
 
     public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
@@ -22,6 +25,7 @@ public class BomberMan extends Item
         _width = width;
         _ownedFlag = ownedFlag;
         _bomberMan = new Image(FlagBomb.class.getResourceAsStream("bomb/"+ _ownedFlag.getColor() +"/bomberman.gif"));
+        _bombs = new Bombs(width, _ownedFlag.getColor());
         this.id = id;
     }
 
@@ -34,6 +38,11 @@ public class BomberMan extends Item
     public Flag getOwnedFlag()
     {
         return _ownedFlag;
+    }
+
+    public Bombs getBombs()
+    {
+        return _bombs;
     }
 
     public void addX(int inc)
