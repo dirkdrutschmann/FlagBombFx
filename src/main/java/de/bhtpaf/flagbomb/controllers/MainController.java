@@ -90,9 +90,7 @@ public class MainController implements LogoutEventListener
             _user = loginUser;
             String finalMsg = msg;
 
-            Platform.runLater(() -> {
-                callOverviewScene(finalMsg);
-            });
+            Platform.runLater(() -> callOverviewScene(finalMsg));
         };
 
         new Thread(login).start();
