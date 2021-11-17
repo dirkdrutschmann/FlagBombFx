@@ -1,8 +1,14 @@
 package de.bhtpaf.flagbomb.services;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import de.bhtpaf.flagbomb.helper.BomberMan;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
+import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
+import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
+import de.bhtpaf.flagbomb.helper.interfaces.BomberManGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.GemGeneratedListener;
 import de.bhtpaf.flagbomb.helper.interfaces.MapGeneratedListener;
 
 import java.net.URI;
@@ -20,6 +26,8 @@ import javax.websocket.*;
 public class WebsocketClient {
 
     List<MapGeneratedListener> _MapGeneratedListeners = new ArrayList<>();
+    List<BomberManGeneratedListener> _BomberManGeneratedListeners = new ArrayList<>();
+    List<GemGeneratedListener> _GemGeneratedListeners = new ArrayList<>();
 
 
     Session userSession = null;
@@ -80,6 +88,52 @@ public class WebsocketClient {
                     listener.onMapGenerated(grid);
                 }
             }
+
+            // Bomberman was sent
+            else if (jObject.get("class").getAsString().equals("Bomberman"))
+            {
+                JsonObject jBombermann = jObject.get("objectValue").getAsJsonObject();
+                JsonObject jFlag = jBombermann.get("ownedFlag").getAsJsonObject();
+
+                BomberMan bomberMan = new BomberMan(
+                    jBombermann.get("x").getAsInt(),
+                    jBombermann.get("y").getAsInt(),
+                    jBombermann.get("width").getAsInt(),
+                    new Flag(
+                            jFlag.get("x").getAsInt(),
+                            jFlag.get("y").getAsInt(),
+                            jFlag.get("flagSize").getAsInt(),
+                            new GsonBuilder().create().fromJson(jFlag.get("color").getAsString(), Flag.Color.class)
+                    ),
+                    jBombermann.get("userId").getAsInt()
+                );
+
+                for (BomberManGeneratedListener listener : _BomberManGeneratedListeners)
+                {
+                    listener.onBomberManGenerated(bomberMan);
+                }
+            }
+
+            // Neuer Gem generiert
+            else if(jObject.get("class").getAsString().equals("Gem"))
+            {
+                int x = jObject.get("objectValue").getAsJsonObject().get("square").getAsJsonObject().get("downLeft").getAsJsonObject().get("x").getAsInt();
+                int y = jObject.get("objectValue").getAsJsonObject().get("square").getAsJsonObject().get("downLeft").getAsJsonObject().get("y").getAsInt();
+
+                int width = jObject.get("objectValue").getAsJsonObject().get("square").getAsJsonObject().get("downRight").getAsJsonObject().get("x").getAsInt() - x;
+
+                Gem gem = new Gem(
+                    x,
+                    y,
+                    width,
+                    jObject.get("objectValue").getAsJsonObject().get("imageIndex").getAsInt()
+                );
+
+                for (GemGeneratedListener listener : _GemGeneratedListeners)
+                {
+                    listener.onGemGenerated(gem);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -115,6 +169,16 @@ public class WebsocketClient {
     public void addMapGeneratedListener(MapGeneratedListener listener)
     {
         _MapGeneratedListeners.add(listener);
+    }
+
+    public void addBomberManGeneratedListener(BomberManGeneratedListener listener)
+    {
+        _BomberManGeneratedListeners.add(listener);
+    }
+
+    public void addGemGeneratedListener(GemGeneratedListener listener)
+    {
+        _GemGeneratedListeners.add(listener);
     }
 
     /**

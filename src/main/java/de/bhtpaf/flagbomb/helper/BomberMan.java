@@ -17,7 +17,7 @@ public class BomberMan extends Item
 
     private Bombs _bombs;
 
-    public final int id;
+    public final int userId;
 
     public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
     {
@@ -26,7 +26,7 @@ public class BomberMan extends Item
         _ownedFlag = ownedFlag;
         _bomberMan = new Image(FlagBomb.class.getResourceAsStream("bomb/"+ _ownedFlag.getColor() +"/bomberman.gif"));
         _bombs = new Bombs(width, _ownedFlag.getColor());
-        this.id = id;
+        this.userId = id;
     }
 
     @Override

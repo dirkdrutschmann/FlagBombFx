@@ -1,10 +1,12 @@
 package de.bhtpaf.flagbomb.controllers;
 
 import de.bhtpaf.flagbomb.FlagBomb;
+import de.bhtpaf.flagbomb.helper.BomberMan;
 import de.bhtpaf.flagbomb.helper.Game;
 import de.bhtpaf.flagbomb.helper.Util;
 import de.bhtpaf.flagbomb.helper.classes.User;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
+import de.bhtpaf.flagbomb.helper.interfaces.BomberManGeneratedListener;
 import de.bhtpaf.flagbomb.helper.interfaces.GameOverListener;
 import de.bhtpaf.flagbomb.helper.interfaces.LogoutEventListener;
 import de.bhtpaf.flagbomb.helper.interfaces.MapGeneratedListener;
@@ -31,7 +33,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class OverviewController implements MapGeneratedListener, GameOverListener
+public class OverviewController implements MapGeneratedListener, GameOverListener, BomberManGeneratedListener
 {
     private boolean _StopAllThreads = false;
     private boolean _StopWaitingForPartnerThread = false;
@@ -45,6 +47,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
 
     private Grid _mapGeneratedByWebSocket = null;
     private PlayingPair _playingPair = null;
+    private List<BomberMan> _playersGeneratedByWebSocket = null;
 
     private User _user;
     private Stage _mainStage;
@@ -150,7 +153,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
         int squareFactor = _getValue(edt_game_squareFactor, _stdGameSquareFactor);
         int bombs = _getValue(edt_game_bombs, _stdGameBombs);
 
-        Game game = new Game(_api, _mainStage, _user, speed, width, squareFactor, bombs, _mapGeneratedByWebSocket, _playingPair);
+        Game game = new Game(_api, _wsClient, _mainStage, _user, speed, width, squareFactor, bombs, _mapGeneratedByWebSocket, _playersGeneratedByWebSocket, _playingPair);
 
         new Thread(() -> {
             try
@@ -292,16 +295,32 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
     @Override
     public void onGameOver(PlayingPair pair)
     {
-        if (_wsClient != null) {
-            if (_wsClient.isOpen()) {
+        if (_wsClient != null)
+        {
+            if (_wsClient.isOpen())
+            {
                 _wsClient.close();
                 _wsClient = null;
             }
 
             _api.setGameOverStatus(_user, pair);
+
+            _mapGeneratedByWebSocket = null;
+            _playersGeneratedByWebSocket = null;
         }
 
         _startAllTimers();
+    }
+
+    @Override
+    public void onBomberManGenerated(BomberMan bomberMan)
+    {
+        if (_playersGeneratedByWebSocket == null)
+        {
+            _playersGeneratedByWebSocket = new ArrayList<>();
+        }
+
+        _playersGeneratedByWebSocket.add(bomberMan);
     }
 
     private EventHandler<MouseEvent> _getAvailablePlayersOnMouseClickedHandler()
@@ -563,7 +582,11 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
             {
                 // Max 30 Sekunden auf Map warten
                 i = 0;
-                while (_mapGeneratedByWebSocket == null && i < 60)
+                while
+                (
+                       (_mapGeneratedByWebSocket == null || _playersGeneratedByWebSocket == null)
+                    && i < 60
+                )
                 {
                     try
                     {
@@ -988,5 +1011,6 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
 
         _wsClient = new WebsocketClient(URI.create(_api.getWebSocketUrl(pair.id, _user.id)));
         _wsClient.addMapGeneratedListener(this::onMapGenerated);
+        _wsClient.addBomberManGeneratedListener(this::onBomberManGenerated);
     }
 }

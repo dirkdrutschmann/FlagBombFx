@@ -22,5 +22,6 @@ module de.bhtpaf.pacbomb {
     exports de.bhtpaf.flagbomb.services;
     exports de.bhtpaf.flagbomb.helper.classes;
     exports de.bhtpaf.flagbomb.helper.classes.map;
+    exports de.bhtpaf.flagbomb.helper.classes.map.items;
     exports de.bhtpaf.flagbomb.helper.responses;
 }

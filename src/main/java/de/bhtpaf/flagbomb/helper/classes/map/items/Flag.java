@@ -8,25 +8,29 @@ public class Flag extends Item
 {
     public enum Color
     {
-        blue{
+        BLUE
+        {
             @Override
             public String toString() {
                 return "blue";
             }
         },
-        red{
+        RED
+        {
             @Override
             public String toString() {
                 return "red";
             }
         },
-        green{
+        GREEN
+        {
             @Override
             public String toString() {
                 return "green";
             }
         },
-        yellow{
+        YELLOW
+        {
             @Override
             public String toString() {
                 return "yellow";
@@ -58,22 +62,22 @@ public class Flag extends Item
 
         switch (_color)
         {
-            case blue:
+            case BLUE:
             {
                 flagImage = _blueFlagImage;
                 break;
             }
-            case red:
+            case RED:
             {
                 flagImage = _redFlagImage;
                 break;
             }
-            case green:
+            case GREEN:
             {
                 flagImage = _greenFlagImage;
                 break;
             }
-            case yellow:
+            case YELLOW:
             {
                 flagImage = _yellowFlagImage;
                 break;

@@ -3,12 +3,14 @@ package de.bhtpaf.flagbomb.helper;
 import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.classes.User;
 import de.bhtpaf.flagbomb.helper.classes.map.*;
-import de.bhtpaf.flagbomb.helper.classes.map.items.Bombs;
+import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.flagbomb.helper.interfaces.GameOverListener;
+import de.bhtpaf.flagbomb.helper.interfaces.GemGeneratedListener;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
 import de.bhtpaf.flagbomb.services.Api;
+import de.bhtpaf.flagbomb.services.WebsocketClient;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -25,7 +27,7 @@ import javafx.stage.Stage;
 
 import java.util.*;
 
-public class Game
+public class Game implements GemGeneratedListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -34,6 +36,7 @@ public class Game
     private final Api _api;
     private final PlayingPair _playingPair;
     private final User _user;
+    private final WebsocketClient _wsClient;
 
     private Scene _gameScene = null;
 
@@ -62,13 +65,26 @@ public class Game
 
     private List<Gem> gemList = new ArrayList();
     
-    public Game(Api api, Stage stage, User user, int speed, int width, int squareFactor, int bombs, Grid grid, PlayingPair pair)
+    public Game(
+        Api api,
+        WebsocketClient wsClient,
+        Stage stage,
+        User user,
+        int speed,
+        int width,
+        int squareFactor,
+        int bombs,
+        Grid grid,
+        List<BomberMan> players,
+        PlayingPair pair
+    )
     {
         _api = api;
         _previousScene = stage.getScene();
         _mainStage = stage;
         _playingPair = pair;
         _user = user;
+        _wsClient = wsClient;
 
         _speed = speed;
         _width = width;
@@ -79,6 +95,7 @@ public class Game
         _bomberManSize = _width / _squareFactor;
 
         _grid = grid;
+        _players = players;
     }
 
     public void init()
@@ -90,41 +107,48 @@ public class Game
                 _generateGrid();
             }
 
+            if (_wsClient != null)
+            {
+                _wsClient.addGemGeneratedListener(this::onGemGenerated);
+            }
+
             _bomberManSize = _squareFactor;
 
-            _players = new ArrayList<>();
+            if (_players == null) {
+                _players = new ArrayList<>();
 
-            // Spieler 1
-            _players.add(
-                new BomberMan(
-                    0,
-                    _squareFactor,
-                    _bomberManSize,
-                    new Flag(
-                        _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.x,
-                        _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.y,
+                // Spieler 1
+                _players.add(
+                    new BomberMan(
+                        0,
+                        _squareFactor,
                         _bomberManSize,
-                        Flag.Color.blue
-                    ),
-                    _user.id
-                )
-            );
+                        new Flag(
+                            _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.x,
+                            _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.y,
+                            _bomberManSize,
+                            Flag.Color.BLUE
+                        ),
+                        _user.id
+                    )
+                );
 
-            // Spieler zwei
-            _players.add(
-                new BomberMan(
-                    _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.x,
-                    _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.y,
-                    _bomberManSize,
-                    new Flag(
-                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
-                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
+                // Spieler zwei
+                _players.add(
+                    new BomberMan(
+                        _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.x,
+                        _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.y,
                         _bomberManSize,
-                        Flag.Color.red
-                    ),
-                    _user.id
-                )
-            );
+                        new Flag(
+                            _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
+                            _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
+                            _bomberManSize,
+                            Flag.Color.RED
+                        ),
+                        _user.id
+                    )
+                );
+            }
 
             backgroundPlayer.setAutoPlay(true);
             backgroundPlayer.setVolume(0.1);
@@ -224,7 +248,7 @@ public class Game
                 {
                     for (BomberMan player: _players)
                     {
-                        if (player.id == _user.id)
+                        if (player.userId == _user.id)
                         {
                             _addBomb(player);
                             break;
@@ -267,6 +291,12 @@ public class Game
         _gameOverListeners.add(listener);
     }
 
+    @Override
+    public void onGemGenerated(Gem gem)
+    {
+        gemList.add(gem);
+    }
+
     private void _tick(GraphicsContext gc)
     {
         if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING)
@@ -277,9 +307,12 @@ public class Game
 
         for (BomberMan player: _players)
         {
-            if (!_grid.hit(player.square, _direction))
+            if (player.userId == _user.id)
             {
-                player.doStep(_direction);
+                if (!_grid.hit(player.square, _direction))
+                {
+                    player.doStep(_direction);
+                }
             }
         }
 
@@ -341,14 +374,16 @@ public class Game
             }
         }
 
-        Random rand = new Random();
-
-        if (gemList.size() < 5)
+        // Neue Items nur erstellen, wenn kein Multiplayer
+        if (_wsClient == null)
         {
-            for (int i = 0; i < 1 + rand.nextInt(6 - gemList.size()); i++)
-            {
-                gemList.add(Gem.getRandom(_grid));
-                gemList.get(gemList.size() - 1).draw(gc);
+            Random rand = new Random();
+
+            if (gemList.size() < 5) {
+                for (int i = 0; i < 1 + rand.nextInt(6 - gemList.size()); i++) {
+                    gemList.add(Gem.getRandom(_grid));
+                    gemList.get(gemList.size() - 1).draw(gc);
+                }
             }
         }
 
@@ -384,5 +419,6 @@ public class Game
         _grid = new Grid (_width, _height, _squareFactor);
         _grid = _api.getGrid(_grid, _user);
     }
+
 
 }
