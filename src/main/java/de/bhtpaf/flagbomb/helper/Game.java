@@ -295,7 +295,7 @@ public class Game implements GemGeneratedListener {
         gc.setFont(new Font("", fontSizeTop));
         String menuBar = "BOMBS: " + _bombs;
         if(_flags>0){
-            menuBar += " FLAGS: " + _flags;
+            menuBar += "        FLAGS: " + _flags;
         }
         gc.fillText(menuBar, 10, 20);
         //
@@ -366,6 +366,7 @@ public class Game implements GemGeneratedListener {
         items.addAll(gemList);
         for (BomberMan player : _players) {
             items.add(player.getOwnedFlag());
+            items.addAll(player.getBombs());
         }
 
         for (Item item : items) {
