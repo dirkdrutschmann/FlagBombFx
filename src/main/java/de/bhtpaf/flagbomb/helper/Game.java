@@ -6,6 +6,7 @@ import de.bhtpaf.flagbomb.helper.classes.map.*;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
+import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
 import de.bhtpaf.flagbomb.helper.interfaces.GameOverListener;
 import de.bhtpaf.flagbomb.helper.interfaces.GemGeneratedListener;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
@@ -25,10 +26,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.sql.Array;
 import java.util.*;
 
-public class Game implements GemGeneratedListener
-{
+public class Game implements GemGeneratedListener {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
     private final Scene _previousScene;
@@ -38,6 +39,7 @@ public class Game implements GemGeneratedListener
     private final User _user;
     private final WebsocketClient _wsClient;
 
+
     private Scene _gameScene = null;
 
     private final int _speed;
@@ -45,9 +47,11 @@ public class Game implements GemGeneratedListener
     private final int _width;
     private final int _height;
 
+    private BomberMan _myPlayer;
     private int _squareFactor;
     private int _bomberManSize;
     private int _bombs;
+    private int _flags;
 
     private Grid _grid = null;
 
@@ -64,21 +68,20 @@ public class Game implements GemGeneratedListener
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
     private List<Gem> gemList = new ArrayList();
-    
+
     public Game(
-        Api api,
-        WebsocketClient wsClient,
-        Stage stage,
-        User user,
-        int speed,
-        int width,
-        int squareFactor,
-        int bombs,
-        Grid grid,
-        List<BomberMan> players,
-        PlayingPair pair
-    )
-    {
+            Api api,
+            WebsocketClient wsClient,
+            Stage stage,
+            User user,
+            int speed,
+            int width,
+            int squareFactor,
+            int bombs,
+            Grid grid,
+            List<BomberMan> players,
+            PlayingPair pair
+    ) {
         _api = api;
         _previousScene = stage.getScene();
         _mainStage = stage;
@@ -90,6 +93,7 @@ public class Game implements GemGeneratedListener
         _width = width;
         _squareFactor = squareFactor;
         _bombs = bombs;
+        _flags = 0;
 
         _height = _width;
         _bomberManSize = _width / _squareFactor;
@@ -98,17 +102,13 @@ public class Game implements GemGeneratedListener
         _players = players;
     }
 
-    public void init()
-    {
-        try
-        {
-            if (_grid == null)
-            {
+    public void init() {
+        try {
+            if (_grid == null) {
                 _generateGrid();
             }
 
-            if (_wsClient != null)
-            {
+            if (_wsClient != null) {
                 _wsClient.addGemGeneratedListener(this::onGemGenerated);
             }
 
@@ -119,35 +119,43 @@ public class Game implements GemGeneratedListener
 
                 // Spieler 1
                 _players.add(
-                    new BomberMan(
-                        0,
-                        _squareFactor,
-                        _bomberManSize,
-                        new Flag(
-                            _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.x,
-                            _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.y,
-                            _bomberManSize,
-                            Flag.Color.BLUE
-                        ),
-                        _user.id
-                    )
+                        new BomberMan(
+                                0,
+                                _squareFactor,
+                                _bomberManSize,
+                                new Flag(
+                                        _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.x,
+                                        _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.y,
+                                        _bomberManSize,
+                                        Flag.Color.BLUE
+                                ),
+                                _user.id
+                        )
                 );
 
                 // Spieler zwei
                 _players.add(
-                    new BomberMan(
-                        _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.x,
-                        _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.y,
-                        _bomberManSize,
-                        new Flag(
-                            _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
-                            _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
-                            _bomberManSize,
-                            Flag.Color.RED
-                        ),
-                        _user.id
-                    )
+                        new BomberMan(
+                                _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.x,
+                                _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.y,
+                                _bomberManSize,
+                                new Flag(
+                                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
+                                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
+                                        _bomberManSize,
+                                        Flag.Color.RED
+                                ),
+                                _user.id + 1
+                        )
                 );
+            }
+
+            if (_myPlayer == null) {
+                for (BomberMan player : _players) {
+                    if (player.userId == _user.id) {
+                        _myPlayer = player;
+                    }
+                }
             }
 
             backgroundPlayer.setAutoPlay(true);
@@ -159,27 +167,22 @@ public class Game implements GemGeneratedListener
             GraphicsContext gc = c.getGraphicsContext2D();
             root.getChildren().add(c);
 
-            new AnimationTimer()
-            {
+            new AnimationTimer() {
                 long lastTick = 0;
 
-                public void handle(long now)
-                {
-                    if (lastTick == 0)
-                    {
+                public void handle(long now) {
+                    if (lastTick == 0) {
                         lastTick = now;
                         _tick(gc);
                         return;
                     }
 
-                    if (now - lastTick > 1000000000 / _speed)
-                    {
+                    if (now - lastTick > 1000000000 / _speed) {
                         lastTick = now;
                         _tick(gc);
                     }
 
-                    if (gameOver)
-                    {
+                    if (gameOver) {
                         stop();
 
                         gc.setFill(Color.BLACK);
@@ -188,8 +191,7 @@ public class Game implements GemGeneratedListener
                         double factor = string.length() * fontSizeTop * 0.5;
                         gc.fillText(string, _height / 2 - factor, _width / 2);
 
-                        if (backgroundPlayer.getStatus() == MediaPlayer.Status.PLAYING)
-                        {
+                        if (backgroundPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
                             backgroundPlayer.stop();
                         }
                         gameOverPlayer.setVolume(0.5);
@@ -201,8 +203,7 @@ public class Game implements GemGeneratedListener
                                     @Override
                                     public void run() {
                                         // Raise GameOver-Event
-                                        for (GameOverListener listener : _gameOverListeners)
-                                        {
+                                        for (GameOverListener listener : _gameOverListeners) {
                                             listener.onGameOver(_playingPair);
                                         }
 
@@ -228,52 +229,28 @@ public class Game implements GemGeneratedListener
             // control
             _gameScene.addEventFilter(KeyEvent.KEY_PRESSED, key -> {
 
-                if (key.getCode() == KeyCode.UP)
-                {
-                    _direction = Dir.up;
-                }
-                else if (key.getCode() == KeyCode.LEFT)
-                {
-                    _direction = Dir.left;
-                }
-                else if (key.getCode() == KeyCode.DOWN)
-                {
-                    _direction = Dir.down;
-                }
-                else if (key.getCode() == KeyCode.RIGHT)
-                {
-                    _direction = Dir.right;
-                }
-                else if (key.getCode() == KeyCode.SPACE)
-                {
-                    for (BomberMan player: _players)
-                    {
-                        if (player.userId == _user.id)
-                        {
-                            _addBomb(player);
-                            break;
-                        }
-                    }
-                }
-                else if (key.getCode() == KeyCode.ESCAPE)
-                {
+                if (key.getCode() == KeyCode.UP) {
+                    _myPlayer.direction = Dir.up;
+                } else if (key.getCode() == KeyCode.LEFT) {
+                    _myPlayer.direction = Dir.left;
+                } else if (key.getCode() == KeyCode.DOWN) {
+                    _myPlayer.direction = Dir.down;
+                } else if (key.getCode() == KeyCode.RIGHT) {
+                    _myPlayer.direction = Dir.right;
+                } else if (key.getCode() == KeyCode.SPACE) {
+                    _addBomb(_myPlayer);
+                } else if (key.getCode() == KeyCode.ESCAPE) {
                     gameOver = true;
                 }
             });
 
-            //If you do not want to use css style, you can just delete the next line.
-            //  scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void show() throws Exception
-    {
-        if (_grid == null)
-        {
+    public void show() throws Exception {
+        if (_grid == null) {
             throw new Exception("Grid wurde nicht generiert");
         }
 
@@ -286,35 +263,25 @@ public class Game implements GemGeneratedListener
         _mainStage.setScene(_gameScene);
     }
 
-    public void addOnGameOverListener(GameOverListener listener)
-    {
+    public void addOnGameOverListener(GameOverListener listener) {
         _gameOverListeners.add(listener);
     }
 
     @Override
-    public void onGemGenerated(Gem gem)
-    {
+    public void onGemGenerated(Gem gem) {
         gemList.add(gem);
     }
 
-    private void _tick(GraphicsContext gc)
-    {
-        if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING)
-        {
+    private void _tick(GraphicsContext gc) {
+        if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING) {
             backgroundPlayer.setVolume(0.1);
             backgroundPlayer.play();
         }
 
-        for (BomberMan player: _players)
-        {
-            if (player.userId == _user.id)
-            {
-                if (!_grid.hit(player.square, _direction))
-                {
-                    player.doStep(_direction);
-                }
-            }
+        if (!_grid.hit(_myPlayer)) {
+            _myPlayer.doStep();
         }
+
 
         // fill
         // background
@@ -326,7 +293,11 @@ public class Game implements GemGeneratedListener
         // score
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("", fontSizeTop));
-        gc.fillText("BOMBS: " + _bombs, 10, 20);
+        String menuBar = "BOMBS: " + _bombs;
+        if(_flags>0){
+            menuBar += " FLAGS: " + _flags;
+        }
+        gc.fillText(menuBar, 10, 20);
         //
         gc.setFill(Color.WHITE);
 
@@ -335,48 +306,25 @@ public class Game implements GemGeneratedListener
         //TO DO DYNAMIC WIDTH
         String string = "Player 1: " + (_user != null ? _user.username : "Anonymous");
         double factor = string.length() * fontSizeTop * 0.5;
-        gc.fillText(string, _width -factor, 20);
+        gc.fillText(string, _width - factor, 20);
 
-        for (BomberMan player: _players)
-        {
-            player.draw(gc);
+        for (BomberMan player : _players) {
             player.getOwnedFlag().draw(gc);
-
+        }
+        for(BomberMan player: _players){
+            player.draw(gc);
             player.getBombs().updateBombs(gc, _grid);
         }
 
-        boolean collected = false;
-        for (int i = 0; i < gemList.size(); i++)
-        {
-            collected = false;
-            Gem f = gemList.get(i);
-            Tile gem = _grid.find(f.getMiddleCoord());
 
-            for (BomberMan player : _players)
-            {
-                Tile bm = _grid.find(player.getMiddleCoord());
-
-                if (gem.compare(bm)) {
-                    MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
-                    collectPlayer.setVolume(0.5);
-                    collectPlayer.play();
-                    _bombs++;
-
-                    gemList.remove(f);
-
-                    collected = true;
-                }
-            }
-
-            if (!collected)
-            {
-                f.draw(gc);
-            }
+        for (Gem gem : gemList) {
+            gem.draw(gc);
         }
 
+        _collect();
+
         // Neue Items nur erstellen, wenn kein Multiplayer
-        if (_wsClient == null)
-        {
+        if (_wsClient == null) {
             Random rand = new Random();
 
             if (gemList.size() < 5) {
@@ -389,35 +337,65 @@ public class Game implements GemGeneratedListener
 
     }
 
-    private void _addBomb(BomberMan player)
-    {
-        if(_bombs > 0)
-        {
+    private void _addBomb(BomberMan player) {
+        if (_bombs > 0) {
             int x = (player.square.downLeft.x + player.square.downRight.x) / 2;
             int y = (player.square.upperLeft.y + player.square.downLeft.y) / 2;
 
-            if (player.getBombs().placeOnGrid(_grid, x, y) > 0)
-            {
+            if (player.getBombs().placeOnGrid(_grid, x, y) > 0) {
                 _bombs--;
             }
-        }
-        else
-        {
+        } else {
             MediaPlayer errorPlayer = new MediaPlayer(errorMusic);
             errorPlayer.setVolume(0.5);
             errorPlayer.play();
         }
     }
 
-    private void _generateGrid() throws Exception
-    {
-        if (_grid != null)
-        {
+    private void _generateGrid() throws Exception {
+        if (_grid != null) {
             return;
         }
 
-        _grid = new Grid (_width, _height, _squareFactor);
+        _grid = new Grid(_width, _height, _squareFactor);
         _grid = _api.getGrid(_grid, _user);
+    }
+
+    private void _collect() {
+        List<Item> items = new ArrayList<Item>();
+        items.addAll(gemList);
+        for (BomberMan player : _players) {
+            items.add(player.getOwnedFlag());
+        }
+
+        for (Item item : items) {
+
+            Tile tile = _grid.find(item.getMiddleCoord());
+
+            for (BomberMan player : _players) {
+                Tile bm = _grid.find(player.getMiddleCoord());
+
+
+                if (tile.compare(bm)) {
+                    if(item instanceof Gem) {
+                        MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
+                        collectPlayer.setVolume(0.5);
+                        collectPlayer.play();
+                        _bombs++;
+
+                        gemList.remove(item);
+                    }else if(item instanceof Flag && _myPlayer.getOwnedFlag() != (Flag)item && _myPlayer.capturedFlag == null){
+                        _myPlayer.capturedFlag = (Flag)item;
+                    }
+                    else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item && _myPlayer.capturedFlag != null){
+                        _myPlayer.capturedFlag.respawn();
+                        _myPlayer.capturedFlag = null;
+                        _flags++;
+                    }
+
+                }
+            }
+        }
     }
 
 

@@ -1,6 +1,7 @@
 package de.bhtpaf.flagbomb.helper.classes.map.items;
 
 import de.bhtpaf.flagbomb.FlagBomb;
+import de.bhtpaf.flagbomb.helper.classes.map.Square;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
@@ -40,6 +41,7 @@ public class Flag extends Item
 
     };
 
+    private final Square _initSquare;
     private final Image _blueFlagImage = new Image(FlagBomb.class.getResourceAsStream("flag/flag_blue.png"));
     private final Image _redFlagImage = new Image(FlagBomb.class.getResourceAsStream("flag/flag_red.png"));
     private final Image _greenFlagImage = new Image(FlagBomb.class.getResourceAsStream("flag/flag_green.png"));
@@ -51,6 +53,7 @@ public class Flag extends Item
     public Flag(int y, int x, int flagSize, Color color)
     {
         super(x, y, flagSize);
+        _initSquare = super.square;
         this._flagSize =  flagSize - 2;
         _color = color;
     }
@@ -88,5 +91,8 @@ public class Flag extends Item
     }
     public String getColor(){
         return this._color.toString();
+    }
+    public void respawn(){
+        this.square = _initSquare;
     }
 }

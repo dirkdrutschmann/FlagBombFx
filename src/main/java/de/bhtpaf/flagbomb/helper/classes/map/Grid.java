@@ -2,6 +2,7 @@ package de.bhtpaf.flagbomb.helper.classes.map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import de.bhtpaf.flagbomb.helper.BomberMan;
 import de.bhtpaf.flagbomb.helper.Dir;
 import de.bhtpaf.flagbomb.helper.classes.json.JsonDeserializerWithInheritance;
 import javafx.scene.canvas.GraphicsContext;
@@ -76,31 +77,31 @@ public class Grid {
         return null;
     }
 
-    public boolean hit (Square myself, Dir direction)
+    public boolean hit (BomberMan player)
     {
         Tile current = null;
-        Tile middle = find(new Coord((myself.upperLeft.x + myself.downRight.x) / 2, (myself.upperLeft.y + myself.downRight.y) / 2));
+        Tile middle = find(new Coord((player.square.upperLeft.x + player.square.downRight.x) / 2, (player.square.upperLeft.y + player.square.downRight.y) / 2));
 
-        switch (direction)
+        switch (player.direction)
         {
             case up:
             {
-                current = find(new Coord(myself.downLeft.x, myself.downLeft.y - 1));
+                current = find(new Coord(player.square.downLeft.x, player.square.downLeft.y - 1));
                 break;
             }
             case down:
             {
-                current = find(new Coord(myself.upperLeft.x, myself.upperLeft.y + 1));
+                current = find(new Coord(player.square.upperLeft.x, player.square.upperLeft.y + 1));
                 break;
             }
             case left:
             {
-                current = find(new Coord(myself.downRight.x - 1, myself.downRight.y));
+                current = find(new Coord(player.square.downRight.x - 1, player.square.downRight.y));
                 break;
             }
             case right:
             {
-                current = find(new Coord(myself.downLeft.x + 1, myself.downLeft.y));
+                current = find(new Coord(player.square.downLeft.x + 1, player.square.downLeft.y));
                 break;
             }
         }
@@ -115,7 +116,7 @@ public class Grid {
 
         Tile refTile = null;
 
-        switch (direction)
+        switch (player.direction)
         {
             case up:
             {
@@ -181,11 +182,11 @@ public class Grid {
 
         if (refTile != null && refTile instanceof Wall)
         {
-            switch (direction)
+            switch (player.direction)
             {
                 case up:
                 {
-                    if(myself.upperLeft.y - 1 <= refTile.downLeft.y)
+                    if(player.square.upperLeft.y - 1 <= refTile.downLeft.y)
                     {
                         return true;
                     }
@@ -194,7 +195,7 @@ public class Grid {
                 }
                 case down:
                 {
-                    if(myself.downLeft.y + 1 >= refTile.upperLeft.y)
+                    if(player.square.downLeft.y + 1 >= refTile.upperLeft.y)
                     {
                         return true;
                     }
@@ -203,7 +204,7 @@ public class Grid {
                 }
                 case left:
                 {
-                    if(myself.downLeft.x - 1 <= refTile.downRight.x)
+                    if(player.square.downLeft.x - 1 <= refTile.downRight.x)
                     {
                         return true;
                     }
@@ -212,7 +213,7 @@ public class Grid {
                 }
                 case right:
                 {
-                    if(myself.downRight.x + 1 >= refTile.downLeft.x)
+                    if(player.square.downRight.x + 1 >= refTile.downLeft.x)
                     {
                         return true;
                     }

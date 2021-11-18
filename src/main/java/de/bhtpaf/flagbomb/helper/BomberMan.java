@@ -5,6 +5,7 @@ import de.bhtpaf.flagbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.skin.TextInputControlSkin;
 import javafx.scene.image.Image;
 
 public class BomberMan extends Item
@@ -13,7 +14,11 @@ public class BomberMan extends Item
 
     public int _width;
 
+    public Dir direction = Dir.right;
+
     private final Flag _ownedFlag;
+
+    public Flag capturedFlag = null;
 
     private Bombs _bombs;
 
@@ -61,7 +66,7 @@ public class BomberMan extends Item
         this.square.upperRight.y += inc;
     }
 
-    public void doStep(Dir direction)
+    public void doStep()
     {
         switch (direction)
         {
@@ -77,6 +82,9 @@ public class BomberMan extends Item
             case right:
                 addX(1);
                 break;
+        }
+        if(capturedFlag != null){
+            capturedFlag.square = this.square;
         }
     }
 
