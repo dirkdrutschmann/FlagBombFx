@@ -7,6 +7,7 @@ import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
+import de.bhtpaf.flagbomb.helper.interfaces.BombExplodedListener;
 import de.bhtpaf.flagbomb.helper.interfaces.GameOverListener;
 import de.bhtpaf.flagbomb.helper.interfaces.GemGeneratedListener;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
@@ -29,7 +30,7 @@ import javafx.stage.Stage;
 import java.sql.Array;
 import java.util.*;
 
-public class Game implements GemGeneratedListener {
+public class Game implements GemGeneratedListener, BombExplodedListener {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
     private final Scene _previousScene;
@@ -341,9 +342,10 @@ public class Game implements GemGeneratedListener {
         if (_bombs > 0) {
             int x = (player.square.downLeft.x + player.square.downRight.x) / 2;
             int y = (player.square.upperLeft.y + player.square.downLeft.y) / 2;
-
-            if (player.getBombs().placeOnGrid(_grid, x, y) > 0) {
+            Bomb bomb = player.getBombs().placeOnGrid(_grid, x, y);
+            if (bomb != null) {
                 _bombs--;
+                bomb.addBombExplodedListener(this::onBombExploded);
             }
         } else {
             MediaPlayer errorPlayer = new MediaPlayer(errorMusic);
@@ -400,4 +402,8 @@ public class Game implements GemGeneratedListener {
     }
 
 
+    @Override
+    public void onBombExploded(Bomb bomb) {
+        System.out.println("Boom");
+    }
 }

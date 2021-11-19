@@ -68,17 +68,19 @@ public class Bombs implements Collection<Bomb>
         }
     }
 
-    public int placeOnGrid(Grid grid, int x, int y)
+    public Bomb placeOnGrid(Grid grid, int x, int y)
     {
         Square pos = grid.find(new Coord(x, y));
-
+        Bomb bomb;
         if (pos != null)
         {
-            _bombs.add(new Bomb(pos, _stateImage, _soundBoom));
-            return size();
+            bomb = new Bomb(pos, _stateImage, _soundBoom);
+            _bombs.add(bomb);
+
+            return bomb;
         }
 
-        return -1;
+        return null;
     }
 
     @Override

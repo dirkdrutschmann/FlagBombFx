@@ -1,6 +1,7 @@
 package de.bhtpaf.flagbomb.helper.classes.map.items;
 
 import de.bhtpaf.flagbomb.helper.classes.map.*;
+import de.bhtpaf.flagbomb.helper.interfaces.BombExplodedListener;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.media.Media;
@@ -22,6 +23,8 @@ public class Bomb extends Item
     private final int _boomFactor = 2;
 
     private final MediaPlayer _boomSound;
+
+    private List<BombExplodedListener> _bombExplodedListeners = new ArrayList<>();
 
     // Millisekunden bis Bombe explodiert
     private final long _bombTime = 1750;
@@ -164,8 +167,15 @@ public class Bomb extends Item
     }
 
     public void explode(){
+        for(BombExplodedListener listener: _bombExplodedListeners){
+            listener.onBombExploded(this);
+        }
         _boomSound.setVolume(0.5);
         _boomSound.play();
+    }
+
+    public void addBombExplodedListener(BombExplodedListener listener){
+        _bombExplodedListeners.add(listener);
     }
 
     @Override
