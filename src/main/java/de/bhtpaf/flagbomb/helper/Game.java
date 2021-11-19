@@ -283,7 +283,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
         if (!_grid.hit(_myPlayer)) {
             _myPlayer.doStep();
         }
-        if(_hit){
+        if (_hit) {
             _hit = false;
             gc.setFill(Color.BLACK);
             gc.setFont(new Font("", 50));
@@ -303,7 +303,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("", fontSizeTop));
         String menuBar = "BOMBS: " + _bombs;
-        if(_flags>0){
+        if (_flags > 0) {
             menuBar += "        FLAGS: " + _flags;
         }
         gc.fillText(menuBar, 10, 20);
@@ -320,7 +320,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
         for (BomberMan player : _players) {
             player.getOwnedFlag().draw(gc);
         }
-        for(BomberMan player: _players){
+        for (BomberMan player : _players) {
             player.draw(gc);
             player.getBombs().updateBombs(gc, _grid);
         }
@@ -382,36 +382,53 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
         for (Item item : items) {
 
             Tile tile = _grid.find(item.getMiddleCoord());
+            Tile bm = _grid.find(_myPlayer.getMiddleCoord());
 
-            for (BomberMan player : _players) {
-                Tile bm = _grid.find(player.getMiddleCoord());
+            if (tile.compare(bm)) {
+                if (item instanceof Gem) {
+                    MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
+                    collectPlayer.setVolume(0.5);
+                    collectPlayer.play();
+                    _bombs++;
 
-
-                if (tile.compare(bm)) {
-                    if(item instanceof Gem) {
-                        MediaPlayer collectPlayer = new MediaPlayer(soundCollect);
-                        collectPlayer.setVolume(0.5);
-                        collectPlayer.play();
-                        _bombs++;
-
-                        gemList.remove(item);
-                    }else if(item instanceof Flag && _myPlayer.getOwnedFlag() != (Flag)item && _myPlayer.capturedFlag == null){
-                        _myPlayer.capturedFlag = (Flag)item;
-                    }
-                    else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item && _myPlayer.capturedFlag != null){
-                        _myPlayer.capturedFlag.respawn();
-                        _myPlayer.capturedFlag = null;
-                        _flags++;
-                    }
-
+                    gemList.remove(item);
+                } else if (item instanceof Flag && _myPlayer.getOwnedFlag() != (Flag) item && _myPlayer.capturedFlag == null) {
+                    _myPlayer.capturedFlag = (Flag) item;
+                } else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag) item && _myPlayer.capturedFlag != null) {
+                    _myPlayer.capturedFlag.respawn();
+                    _myPlayer.capturedFlag = null;
+                    _flags++;
                 }
+                for (BomberMan player : _players) {
+                    if (bm.compare(_grid.find(player.getMiddleCoord()))) {
+                        if (_myPlayer.capturedFlag == player.getOwnedFlag()) {
+                            _myPlayer.capturedFlag.respawn();
+                            _myPlayer.capturedFlag = null;
+                            _myPlayer.respawn();
+                        }
+                        if (player.capturedFlag == _myPlayer.getOwnedFlag()) {
+                            player.capturedFlag.respawn();
+                            player.capturedFlag = null;
+                            player.respawn();
+                        }
+                    }
+                }
+
             }
+
         }
     }
 
 
     @Override
     public void onBombExploded(Bomb bomb) {
-        _myPlayer.respawn();
+
+        Tile middle = _grid.find(_myPlayer.getMiddleCoord());
+        for (ExtendedTile tile : bomb.getInfectedTiles(_grid)) {
+            if (tile.tile().compare(middle)) {
+                _myPlayer.respawn();
+                return;
+            }
+        }
     }
 }

@@ -79,9 +79,17 @@ public class Bomb extends Item
 
         IndexValues indexes = grid.getIndexValue(grid.find(getMiddleCoord()));
 
-        Tile temp;
+
 
         boolean left = false, right = false, top = false, down = false;
+
+        //Bombe an sich
+
+        Tile temp = grid.columns.get(indexes.column).get(indexes.row);
+
+            infectedTiles.add(
+                    new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row))
+            );
 
         // links
         if (indexes.column > 0)
