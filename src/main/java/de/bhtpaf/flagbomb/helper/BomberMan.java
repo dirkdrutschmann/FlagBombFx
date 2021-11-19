@@ -1,12 +1,15 @@
 package de.bhtpaf.flagbomb.helper;
 
 import de.bhtpaf.flagbomb.FlagBomb;
+import de.bhtpaf.flagbomb.helper.classes.map.Square;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.skin.TextInputControlSkin;
 import javafx.scene.image.Image;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 public class BomberMan extends Item
 {
@@ -24,9 +27,14 @@ public class BomberMan extends Item
 
     public final int userId;
 
+    private final int _x;
+    private final int _y;
+
     public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
     {
         super(x, y, width);
+        _x = x;
+        _y = y;
         _width = width;
         _ownedFlag = ownedFlag;
         _bomberMan = new Image(FlagBomb.class.getResourceAsStream("bomb/"+ _ownedFlag.getColor() +"/bomberman.gif"));
@@ -86,6 +94,14 @@ public class BomberMan extends Item
         if(capturedFlag != null){
             capturedFlag.square = this.square;
         }
+    }
+    public void respawn(){
+        this.square = new Square(_x,_y,_width);
+        capturedFlag = null;
+        Media gameOverMusic = new Media(FlagBomb.class.getResource("sounds/gameover.wav").toString());
+        MediaPlayer hitPlayer = new MediaPlayer(gameOverMusic);
+        hitPlayer.play();
+
     }
 
 

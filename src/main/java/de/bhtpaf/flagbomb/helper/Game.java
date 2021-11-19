@@ -59,6 +59,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
     private Dir _direction = Dir.right;
 
     private boolean gameOver = false;
+    private boolean _hit = false;
 
     private Media soundCollect = new Media(FlagBomb.class.getResource("sounds/collect.wav").toString());
     private Media backgroundMusic = new Media(FlagBomb.class.getResource("sounds/sound.wav").toString());
@@ -282,7 +283,14 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
         if (!_grid.hit(_myPlayer)) {
             _myPlayer.doStep();
         }
-
+        if(_hit){
+            _hit = false;
+            gc.setFill(Color.BLACK);
+            gc.setFont(new Font("", 50));
+            String string = "You got hit!";
+            double factor = string.length() * fontSizeTop * 0.5;
+            gc.fillText(string, _height / 2 - factor, _width / 2);
+        }
 
         // fill
         // background
@@ -404,6 +412,6 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
 
     @Override
     public void onBombExploded(Bomb bomb) {
-        System.out.println("Boom");
+        _myPlayer.respawn();
     }
 }
