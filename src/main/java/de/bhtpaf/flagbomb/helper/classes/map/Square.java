@@ -1,5 +1,7 @@
 package de.bhtpaf.flagbomb.helper.classes.map;
 
+import javax.print.attribute.SupportedValuesAttribute;
+
 public class Square {
 
     public Coord upperLeft;

@@ -1,11 +1,11 @@
 package de.bhtpaf.flagbomb.helper;
 
 public enum Dir {
-    left,
-    right,
-    up,
-    down,
-    stand;
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+    STAND;
 
     public static boolean isOpposite(Dir dir1, Dir dir2)
     {
@@ -14,19 +14,19 @@ public enum Dir {
             return false;
         }
 
-        if (dir1 == Dir.left && dir2 == Dir.right)
+        if (dir1 == Dir.LEFT && dir2 == Dir.RIGHT)
         {
             return true;
         }
-        else if (dir1 == Dir.down && dir2 == Dir.up)
+        else if (dir1 == Dir.DOWN && dir2 == Dir.UP)
         {
             return true;
         }
-        else if (dir1 == Dir.right && dir2 == Dir.left)
+        else if (dir1 == Dir.RIGHT && dir2 == Dir.LEFT)
         {
             return true;
         }
-        else if (dir1 == Dir.up && dir2 == Dir.down)
+        else if (dir1 == Dir.UP && dir2 == Dir.DOWN)
         {
             return true;
         }

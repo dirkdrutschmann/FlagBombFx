@@ -3,7 +3,6 @@ package de.bhtpaf.flagbomb.helper.classes.map;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import de.bhtpaf.flagbomb.helper.BomberMan;
-import de.bhtpaf.flagbomb.helper.Dir;
 import de.bhtpaf.flagbomb.helper.classes.json.JsonDeserializerWithInheritance;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -82,24 +81,24 @@ public class Grid {
         Tile current = null;
         Tile middle = find(new Coord((player.square.upperLeft.x + player.square.downRight.x) / 2, (player.square.upperLeft.y + player.square.downRight.y) / 2));
 
-        switch (player.direction)
+        switch (player.getDirection())
         {
-            case up:
+            case UP:
             {
                 current = find(new Coord(player.square.downLeft.x, player.square.downLeft.y - 1));
                 break;
             }
-            case down:
+            case DOWN:
             {
                 current = find(new Coord(player.square.upperLeft.x, player.square.upperLeft.y + 1));
                 break;
             }
-            case left:
+            case LEFT:
             {
                 current = find(new Coord(player.square.downRight.x - 1, player.square.downRight.y));
                 break;
             }
-            case right:
+            case RIGHT:
             {
                 current = find(new Coord(player.square.downLeft.x + 1, player.square.downLeft.y));
                 break;
@@ -116,9 +115,9 @@ public class Grid {
 
         Tile refTile = null;
 
-        switch (player.direction)
+        switch (player.getDirection())
         {
-            case up:
+            case UP:
             {
                 // Erste Zeile erreicht
                 if (indexes.row == 0)
@@ -133,7 +132,7 @@ public class Grid {
 
                 break;
             }
-            case down:
+            case DOWN:
             {
                 // Letzte Zeile erreicht
                 if (indexes.row + 1 == rowCount)
@@ -148,7 +147,7 @@ public class Grid {
 
                 break;
             }
-            case left:
+            case LEFT:
             {
                 // Linker Rand
                 if (indexes.column == 0)
@@ -163,7 +162,7 @@ public class Grid {
 
                 break;
             }
-            case right:
+            case RIGHT:
             {
                 // Rechter Rand
                 if (indexes.column + 1 == columnCount)
@@ -182,9 +181,9 @@ public class Grid {
 
         if (refTile != null && refTile instanceof Wall)
         {
-            switch (player.direction)
+            switch (player.getDirection())
             {
-                case up:
+                case UP:
                 {
                     if(player.square.upperLeft.y - 1 <= refTile.downLeft.y)
                     {
@@ -193,7 +192,7 @@ public class Grid {
 
                     break;
                 }
-                case down:
+                case DOWN:
                 {
                     if(player.square.downLeft.y + 1 >= refTile.upperLeft.y)
                     {
@@ -202,7 +201,7 @@ public class Grid {
 
                     break;
                 }
-                case left:
+                case LEFT:
                 {
                     if(player.square.downLeft.x - 1 <= refTile.downRight.x)
                     {
@@ -211,7 +210,7 @@ public class Grid {
 
                     break;
                 }
-                case right:
+                case RIGHT:
                 {
                     if(player.square.downRight.x + 1 >= refTile.downLeft.x)
                     {

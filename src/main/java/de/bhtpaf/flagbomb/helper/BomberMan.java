@@ -1,23 +1,28 @@
 package de.bhtpaf.flagbomb.helper;
 
 import de.bhtpaf.flagbomb.FlagBomb;
-import de.bhtpaf.flagbomb.helper.classes.map.Square;
+import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.DirectionChangedListener;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.skin.TextInputControlSkin;
 import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BomberMan extends Item
 {
     private final Image _bomberMan;
 
-    public int _width;
+    private List<DirectionChangedListener> _directionChangedListeners = new ArrayList<>();
 
-    public Dir direction = Dir.right;
+    public int width;
+
+    private Dir _direction;
 
     private final Flag _ownedFlag;
 
@@ -30,17 +35,18 @@ public class BomberMan extends Item
     public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
     {
         super(x, y, width);
-        _width = width;
+        this.width = width;
         _ownedFlag = ownedFlag;
         _bomberMan = new Image(FlagBomb.class.getResourceAsStream("bomb/"+ _ownedFlag.getColor() +"/bomberman.gif"));
         _bombs = new Bombs(width, _ownedFlag.getColor());
+        _direction = Dir.STAND;
         this.userId = id;
     }
 
     @Override
     public void draw(GraphicsContext gc)
     {
-        gc.drawImage(_bomberMan, square.downLeft.x, square.downLeft.y, _width, _width);
+        gc.drawImage(_bomberMan, square.downLeft.x, square.downLeft.y, width, width);
     }
 
     public Flag getOwnedFlag()
@@ -51,6 +57,26 @@ public class BomberMan extends Item
     public Bombs getBombs()
     {
         return _bombs;
+    }
+
+    public Dir getDirection()
+    {
+        return _direction;
+    }
+
+    public void setDirection(Dir direction)
+    {
+        if (direction != _direction)
+        {
+            Dir oldDirection = _direction;
+            _direction = direction;
+
+            for (DirectionChangedListener listener: _directionChangedListeners)
+            {
+                listener.onDirectionChanged(this, oldDirection, _direction);
+            }
+
+        }
     }
 
     public void addX(int inc)
@@ -71,18 +97,18 @@ public class BomberMan extends Item
 
     public void doStep()
     {
-        switch (direction)
+        switch (_direction)
         {
-            case up:
+            case UP:
                 addY(-1);
                 break;
-            case down:
+            case DOWN:
                 addY(1);
                 break;
-            case left:
+            case LEFT:
                 addX(-1);
                 break;
-            case right:
+            case RIGHT:
                 addX(1);
                 break;
         }
@@ -103,5 +129,18 @@ public class BomberMan extends Item
         hitPlayer.play();
     }
 
+    public void addDirectionChangedListeners(DirectionChangedListener listener)
+    {
+        _directionChangedListeners.add(listener);
+    }
 
+    public BombermanJson getForJson()
+    {
+        BombermanJson json = new BombermanJson();
+        json.userId = userId;
+        json.currentSquare = square;
+        json.currentDir = _direction;
+
+        return json;
+    }
 }
