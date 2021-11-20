@@ -50,7 +50,8 @@ public class Bombs implements Collection<Bomb>
 
 
             // Bombe explodiert
-            if (bombState == 5) {
+            if (bombState == 5)
+            {
                 bomb.explode();
                 List<ExtendedTile> infected = bomb.getInfectedTiles(grid);
 
@@ -71,10 +72,10 @@ public class Bombs implements Collection<Bomb>
     public Bomb placeOnGrid(Grid grid, int x, int y)
     {
         Square pos = grid.find(new Coord(x, y));
-        Bomb bomb;
+
         if (pos != null)
         {
-            bomb = new Bomb(pos, _stateImage, _soundBoom);
+            Bomb bomb = new Bomb(pos, _stateImage, _soundBoom);
             _bombs.add(bomb);
 
             return bomb;

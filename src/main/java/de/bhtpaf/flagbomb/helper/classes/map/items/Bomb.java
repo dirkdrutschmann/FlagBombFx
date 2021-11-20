@@ -79,17 +79,11 @@ public class Bomb extends Item
 
         IndexValues indexes = grid.getIndexValue(grid.find(getMiddleCoord()));
 
-
-
         boolean left = false, right = false, top = false, down = false;
 
         //Bombe an sich
-
         Tile temp = grid.columns.get(indexes.column).get(indexes.row);
-
-            infectedTiles.add(
-                    new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row))
-            );
+        infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row)));
 
         // links
         if (indexes.column > 0)
@@ -97,9 +91,7 @@ public class Bomb extends Item
             left = true;
             temp = grid.columns.get(indexes.column - 1).get(indexes.row);
 
-            infectedTiles.add(
-                new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row)));
         }
 
         // rechts
@@ -108,9 +100,7 @@ public class Bomb extends Item
             right = true;
             temp = grid.columns.get(indexes.column + 1).get(indexes.row);
 
-            infectedTiles.add(
-                new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row)));
         }
 
         // oben
@@ -119,9 +109,7 @@ public class Bomb extends Item
             top = true;
             temp = grid.columns.get(indexes.column).get(indexes.row - 1);
 
-            infectedTiles.add(
-                new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row - 1))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row - 1)));
         }
 
         // unten
@@ -130,54 +118,47 @@ public class Bomb extends Item
             down = true;
             temp = grid.columns.get(indexes.column).get(indexes.row + 1);
 
-            infectedTiles.add(
-                new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row + 1))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column, indexes.row + 1)));
         }
 
         if (top && left)
         {
             temp = grid.columns.get(indexes.column - 1).get(indexes.row - 1);
 
-            infectedTiles.add(
-              new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row - 1))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row - 1)));
         }
 
         if (top && right)
         {
             temp = grid.columns.get(indexes.column + 1).get(indexes.row - 1);
 
-            infectedTiles.add(
-                    new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row - 1))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row - 1)));
         }
 
         if (down && left)
         {
             temp = grid.columns.get(indexes.column - 1).get(indexes.row + 1);
 
-            infectedTiles.add(
-                    new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row + 1))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column - 1, indexes.row + 1)));
         }
 
         if (down && right)
         {
             temp = grid.columns.get(indexes.column + 1).get(indexes.row + 1);
 
-            infectedTiles.add(
-                    new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row + 1))
-            );
+            infectedTiles.add(new ExtendedTile(temp, new IndexValues(indexes.column + 1, indexes.row + 1)));
         }
 
         return infectedTiles;
     }
 
-    public void explode(){
-        for(BombExplodedListener listener: _bombExplodedListeners){
+    public void explode()
+    {
+        for(BombExplodedListener listener: _bombExplodedListeners)
+        {
             listener.onBombExploded(this);
         }
+
         _boomSound.setVolume(0.5);
         _boomSound.play();
     }
