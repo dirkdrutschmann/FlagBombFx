@@ -4,9 +4,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.bhtpaf.flagbomb.helper.BomberMan;
+import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BomberManChangedListener;
 import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BomberManGeneratedListener;
 import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GemGeneratedListener;
 import de.bhtpaf.flagbomb.helper.interfaces.eventListener.MapGeneratedListener;
@@ -28,6 +30,7 @@ public class WebsocketClient {
     List<MapGeneratedListener> _MapGeneratedListeners = new ArrayList<>();
     List<BomberManGeneratedListener> _BomberManGeneratedListeners = new ArrayList<>();
     List<GemGeneratedListener> _GemGeneratedListeners = new ArrayList<>();
+    List<BomberManChangedListener> _BomberManChangedListeners = new ArrayList<>();
 
 
     Session userSession = null;
@@ -134,6 +137,17 @@ public class WebsocketClient {
                     listener.onGemGenerated(gem);
                 }
             }
+
+            // Bomberman position changed
+            else if(jObject.get("class").getAsString().equals("BombermanChanged"))
+            {
+                BombermanJson bomberman = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), BombermanJson.class);
+
+                for(BomberManChangedListener listener : _BomberManChangedListeners)
+                {
+                    listener.onBombermanChangedListener(bomberman);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -179,6 +193,11 @@ public class WebsocketClient {
     public void addGemGeneratedListener(GemGeneratedListener listener)
     {
         _GemGeneratedListeners.add(listener);
+    }
+
+    public void addBomberManChangedListener(BomberManChangedListener listener)
+    {
+        _BomberManChangedListeners.add(listener);
     }
 
     /**

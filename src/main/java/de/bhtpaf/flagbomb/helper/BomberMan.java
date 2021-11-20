@@ -66,14 +66,22 @@ public class BomberMan extends Item
 
     public void setDirection(Dir direction)
     {
+        setDirection(direction, true);
+    }
+
+    public void setDirection(Dir direction, boolean raiseEvent)
+    {
         if (direction != _direction)
         {
             Dir oldDirection = _direction;
             _direction = direction;
 
-            for (DirectionChangedListener listener: _directionChangedListeners)
+            if (raiseEvent)
             {
-                listener.onDirectionChanged(this, oldDirection, _direction);
+                for (DirectionChangedListener listener : _directionChangedListeners)
+                {
+                    listener.onDirectionChanged(this, oldDirection, _direction);
+                }
             }
 
         }

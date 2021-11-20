@@ -10,10 +10,7 @@ import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
 import de.bhtpaf.flagbomb.helper.classes.webSocketData.WebSocketCommunicationObject;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BombExplodedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.DirectionChangedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GameOverListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GemGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.*;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
 import de.bhtpaf.flagbomb.services.Api;
 import de.bhtpaf.flagbomb.services.WebsocketClient;
@@ -33,7 +30,7 @@ import javafx.stage.Stage;
 
 import java.util.*;
 
-public class Game implements GemGeneratedListener, BombExplodedListener, DirectionChangedListener
+public class Game implements GemGeneratedListener, BombExplodedListener, DirectionChangedListener, BomberManChangedListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -119,6 +116,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
             if (_wsClient != null)
             {
                 _wsClient.addGemGeneratedListener(this::onGemGenerated);
+                _wsClient.addBomberManChangedListener(this::onBombermanChangedListener);
             }
 
             _bomberManSize = _squareFactor;
@@ -339,6 +337,20 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
         _wsClient.sendMessage(o.toJson());
     }
 
+    @Override
+    public void onBombermanChangedListener(BombermanJson newBomberMan)
+    {
+        for (BomberMan player : _players)
+        {
+            if (newBomberMan.userId == player.userId)
+            {
+                player.setDirection(newBomberMan.currentDir, false);
+                player.square = newBomberMan.currentSquare;
+                break;
+            }
+        }
+    }
+
     private void _tick(GraphicsContext gc)
     {
         if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING)
@@ -353,7 +365,10 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
         }
         else
         {
-            _myPlayer.setDirection(Dir.STAND);
+            if (_myPlayer.getDirection() != Dir.STAND)
+            {
+                _myPlayer.setDirection(Dir.STAND);
+            }
         }
 
         // fill
