@@ -7,9 +7,9 @@ import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
-import de.bhtpaf.flagbomb.helper.interfaces.BombExplodedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.GameOverListener;
-import de.bhtpaf.flagbomb.helper.interfaces.GemGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BombExplodedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GameOverListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GemGeneratedListener;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
 import de.bhtpaf.flagbomb.services.Api;
 import de.bhtpaf.flagbomb.services.WebsocketClient;
@@ -27,7 +27,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.sql.Array;
 import java.util.*;
 
 public class Game implements GemGeneratedListener, BombExplodedListener {
@@ -124,8 +123,8 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
                 // Spieler 1
                 _players.add(
                         new BomberMan(
-                                0,
-                                _squareFactor,
+                                _grid.columns.get(0).get(_grid.rowCount / 2).downLeft.x,
+                                _grid.columns.get(0).get(_grid.rowCount / 2).downLeft.y,
                                 _bomberManSize,
                                 new Flag(
                                         _grid.columns.get((_grid.columnCount / 2) + 1).get(1).downLeft.x,
@@ -140,14 +139,14 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
                 // Spieler zwei
                 _players.add(
                         new BomberMan(
-                                _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.x,
-                                _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount - 1).downLeft.y,
+                                _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount / 2).downLeft.x,
+                                _grid.columns.get(_grid.columnCount - 1).get(_grid.rowCount / 2).downLeft.y,
                                 _bomberManSize,
                                 new Flag(
-                                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
-                                        _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
-                                        _bomberManSize,
-                                        Flag.Color.RED
+                                    _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.x,
+                                    _grid.columns.get((_grid.columnCount / 2) + 1).get(_grid.rowCount - 3).downLeft.y,
+                                    _bomberManSize,
+                                    Flag.Color.RED
                                 ),
                                 _user.id + 1
                         )

@@ -7,9 +7,9 @@ import de.bhtpaf.flagbomb.helper.BomberMan;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
-import de.bhtpaf.flagbomb.helper.interfaces.BomberManGeneratedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.GemGeneratedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.MapGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BomberManGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GemGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.MapGeneratedListener;
 
 import java.net.URI;
 import java.util.ArrayList;

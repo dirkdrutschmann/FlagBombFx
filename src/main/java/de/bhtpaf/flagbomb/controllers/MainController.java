@@ -3,7 +3,7 @@ package de.bhtpaf.flagbomb.controllers;
 import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.Util;
 import de.bhtpaf.flagbomb.helper.classes.User;
-import de.bhtpaf.flagbomb.helper.interfaces.LogoutEventListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.LogoutEventListener;
 import de.bhtpaf.flagbomb.services.Api;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;

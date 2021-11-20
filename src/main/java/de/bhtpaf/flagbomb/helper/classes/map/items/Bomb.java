@@ -1,7 +1,7 @@
 package de.bhtpaf.flagbomb.helper.classes.map.items;
 
 import de.bhtpaf.flagbomb.helper.classes.map.*;
-import de.bhtpaf.flagbomb.helper.interfaces.BombExplodedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BombExplodedListener;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.media.Media;
