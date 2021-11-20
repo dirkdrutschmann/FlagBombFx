@@ -27,14 +27,9 @@ public class BomberMan extends Item
 
     public final int userId;
 
-    private final int _x;
-    private final int _y;
-
     public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
     {
         super(x, y, width);
-        _x = x;
-        _y = y;
         _width = width;
         _ownedFlag = ownedFlag;
         _bomberMan = new Image(FlagBomb.class.getResourceAsStream("bomb/"+ _ownedFlag.getColor() +"/bomberman.gif"));
@@ -91,17 +86,21 @@ public class BomberMan extends Item
                 addX(1);
                 break;
         }
-        if(capturedFlag != null){
+        if(capturedFlag != null)
+        {
             capturedFlag.square = this.square;
         }
     }
-    public void respawn(){
-        this.square = new Square(_x,_y,_width);
+
+    public void respawn()
+    {
+        this.square = getInitPosition();
+
         capturedFlag = null;
+
         Media gameOverMusic = new Media(FlagBomb.class.getResource("sounds/gameover.wav").toString());
         MediaPlayer hitPlayer = new MediaPlayer(gameOverMusic);
         hitPlayer.play();
-
     }
 
 

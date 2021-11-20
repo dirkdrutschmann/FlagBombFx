@@ -302,6 +302,21 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
         gemList.add(gem);
     }
 
+    @Override
+    public void onBombExploded(Bomb bomb)
+    {
+        Tile middle = _grid.find(_myPlayer.getMiddleCoord());
+
+        for (ExtendedTile tile : bomb.getInfectedTiles(_grid))
+        {
+            if (tile.tile().compare(middle))
+            {
+                _myPlayer.respawn();
+                return;
+            }
+        }
+    }
+
     private void _tick(GraphicsContext gc)
     {
         if (backgroundPlayer.getStatus() != MediaPlayer.Status.PLAYING)
@@ -466,21 +481,6 @@ public class Game implements GemGeneratedListener, BombExplodedListener {
 
             }
 
-        }
-    }
-
-    @Override
-    public void onBombExploded(Bomb bomb)
-    {
-        Tile middle = _grid.find(_myPlayer.getMiddleCoord());
-
-        for (ExtendedTile tile : bomb.getInfectedTiles(_grid))
-        {
-            if (tile.tile().compare(middle))
-            {
-                _myPlayer.respawn();
-                return;
-            }
         }
     }
 }
