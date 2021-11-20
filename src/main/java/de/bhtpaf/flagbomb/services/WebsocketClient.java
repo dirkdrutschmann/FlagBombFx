@@ -5,13 +5,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.bhtpaf.flagbomb.helper.BomberMan;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
+import de.bhtpaf.flagbomb.helper.classes.json.GemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BomberManChangedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BomberManGeneratedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GemGeneratedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.MapGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ public class WebsocketClient {
     List<BomberManGeneratedListener> _BomberManGeneratedListeners = new ArrayList<>();
     List<GemGeneratedListener> _GemGeneratedListeners = new ArrayList<>();
     List<BomberManChangedListener> _BomberManChangedListeners = new ArrayList<>();
+    List<GemCollectedListener> _GemCollectedListeners = new ArrayList<>();
 
 
     Session userSession = null;
@@ -129,12 +128,24 @@ public class WebsocketClient {
                     x,
                     y,
                     width,
-                    jObject.get("objectValue").getAsJsonObject().get("imageIndex").getAsInt()
+                    jObject.get("objectValue").getAsJsonObject().get("imageIndex").getAsInt(),
+                    jObject.get("objectValue").getAsJsonObject().get("itemId").getAsString()
                 );
 
                 for (GemGeneratedListener listener : _GemGeneratedListeners)
                 {
                     listener.onGemGenerated(gem);
+                }
+            }
+
+            // Gem eingesammel
+            else if (jObject.get("class").getAsString().equals("GemCollected"))
+            {
+                GemJson gem = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), GemJson.class);
+
+                for(GemCollectedListener listener : _GemCollectedListeners)
+                {
+                    listener.onGemCollected(gem);
                 }
             }
 
@@ -198,6 +209,11 @@ public class WebsocketClient {
     public void addBomberManChangedListener(BomberManChangedListener listener)
     {
         _BomberManChangedListeners.add(listener);
+    }
+
+    public void addGemCollectedListener(GemCollectedListener listener)
+    {
+        _GemCollectedListeners.add(listener);
     }
 
     /**

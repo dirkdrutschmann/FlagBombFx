@@ -17,10 +17,18 @@ public abstract class Item
 
     private final Square _initSquare;
 
-    public Item (int x, int y, int width){
+    public Item (int x, int y, int width)
+    {
         this.square = new Square(x, y, width);
         this._initSquare = new Square(x, y, width);
         this.itemId = UUID.randomUUID().toString();
+    }
+
+    public Item (int x, int y, int width, String itemId)
+    {
+        this.square = new Square(x, y, width);
+        this._initSquare = new Square(x, y, width);
+        this.itemId = itemId;
     }
 
     public Coord getMiddleCoord()

@@ -1,6 +1,7 @@
 package de.bhtpaf.flagbomb.helper.classes.map.items;
 
 import de.bhtpaf.flagbomb.FlagBomb;
+import de.bhtpaf.flagbomb.helper.classes.json.GemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -22,6 +23,13 @@ public class Gem extends Item
     public Gem(int x, int y, int width , int selection)
     {
         super(x, y, width);
+        _gemSize =  width - 2;
+        _selectedImage = selection;
+    }
+
+    public Gem(int x, int y, int width , int selection, String itemId)
+    {
+        super(x, y, width, itemId);
         _gemSize =  width - 2;
         _selectedImage = selection;
     }
@@ -53,7 +61,14 @@ public class Gem extends Item
         return new Gem(tile.downLeft.x, tile.downLeft.y, tile.width, selection);
     }
 
+    public GemJson getGemJson()
+    {
+        GemJson json = new GemJson();
+        json.itemId = itemId;
+        json.square = square;
 
+        return json;
+    }
 
     @Override
     public void draw(GraphicsContext gc)

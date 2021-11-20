@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.classes.User;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
+import de.bhtpaf.flagbomb.helper.classes.json.GemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.*;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
@@ -30,7 +31,11 @@ import javafx.stage.Stage;
 
 import java.util.*;
 
-public class Game implements GemGeneratedListener, BombExplodedListener, DirectionChangedListener, BomberManChangedListener
+public class Game implements GemGeneratedListener,
+                             BombExplodedListener,
+                             DirectionChangedListener,
+                             BomberManChangedListener,
+                             GemCollectedListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -69,7 +74,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
     private List<BomberMan> _players = null;
     private MediaPlayer gameOverPlayer = new MediaPlayer(gameOverMusic);
 
-    private List<Gem> gemList = new ArrayList();
+    private List<Gem> _gemList = new ArrayList();
 
     public Game(
             Api api,
@@ -117,6 +122,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
             {
                 _wsClient.addGemGeneratedListener(this::onGemGenerated);
                 _wsClient.addBomberManChangedListener(this::onBombermanChangedListener);
+                _wsClient.addGemCollectedListener(this::onGemCollected);
             }
 
             _bomberManSize = _squareFactor;
@@ -304,7 +310,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
     @Override
     public void onGemGenerated(Gem gem)
     {
-        gemList.add(gem);
+        _gemList.add(gem);
     }
 
     @Override
@@ -340,6 +346,11 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
     @Override
     public void onBombermanChangedListener(BombermanJson newBomberMan)
     {
+        if (_wsClient == null)
+        {
+            return;
+        }
+
         for (BomberMan player : _players)
         {
             if (newBomberMan.userId == player.userId)
@@ -349,6 +360,38 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
                 break;
             }
         }
+    }
+
+    @Override
+    public void onGemCollected(GemJson gem)
+    {
+        if (_wsClient == null)
+        {
+            return;
+        }
+
+        for (Gem g : _gemList)
+        {
+            if (gem.itemId.equals(gem.itemId))
+            {
+                _gemList.remove(g);
+                break;
+            }
+        }
+    }
+
+    public void onGemCollected(Gem gem)
+    {
+        if (_wsClient == null)
+        {
+            return;
+        }
+
+        WebSocketCommunicationObject o = new WebSocketCommunicationObject();
+        o.className = "GemCollected";
+        o.objectValue = gem.getGemJson();
+
+        _wsClient.sendMessage(new GsonBuilder().create().toJson(o, WebSocketCommunicationObject.class));
     }
 
     private void _tick(GraphicsContext gc)
@@ -406,7 +449,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
         }
 
 
-        for (Gem gem : gemList)
+        for (Gem gem : _gemList)
         {
             gem.draw(gc);
         }
@@ -418,12 +461,12 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
         {
             Random rand = new Random();
 
-            if (gemList.size() < 5)
+            if (_gemList.size() < 5)
             {
-                for (int i = 0; i < 1 + rand.nextInt(6 - gemList.size()); i++)
+                for (int i = 0; i < 1 + rand.nextInt(6 - _gemList.size()); i++)
                 {
-                    gemList.add(Gem.getRandom(_grid));
-                    gemList.get(gemList.size() - 1).draw(gc);
+                    _gemList.add(Gem.getRandom(_grid));
+                    _gemList.get(_gemList.size() - 1).draw(gc);
                 }
             }
         }
@@ -467,7 +510,7 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
     private void _collect()
     {
         List<Item> items = new ArrayList<Item>();
-        items.addAll(gemList);
+        items.addAll(_gemList);
 
         for (BomberMan player : _players)
         {
@@ -488,7 +531,8 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
                     collectPlayer.play();
                     _bombs++;
 
-                    gemList.remove(item);
+                    onGemCollected((Gem)item);
+                    _gemList.remove(item);
                 }
                 else if (item instanceof Flag && _myPlayer.getOwnedFlag() != (Flag)item && _myPlayer.capturedFlag == null)
                 {
@@ -523,5 +567,4 @@ public class Game implements GemGeneratedListener, BombExplodedListener, Directi
 
         }
     }
-
 }
