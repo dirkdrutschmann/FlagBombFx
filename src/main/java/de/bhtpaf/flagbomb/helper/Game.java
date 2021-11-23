@@ -3,8 +3,9 @@ package de.bhtpaf.flagbomb.helper;
 import com.google.gson.GsonBuilder;
 import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.classes.User;
+import de.bhtpaf.flagbomb.helper.classes.json.BombJson;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
-import de.bhtpaf.flagbomb.helper.classes.json.GemJson;
+import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.*;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
@@ -29,13 +30,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.beans.EventHandler;
 import java.util.*;
 
 public class Game implements GemGeneratedListener,
                              BombExplodedListener,
                              DirectionChangedListener,
                              BomberManChangedListener,
-                             GemCollectedListener
+                             GemCollectedListener,
+                             BombPlantedListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -107,6 +110,19 @@ public class Game implements GemGeneratedListener,
 
         _grid = grid;
         _players = players;
+
+        javafx.event.EventHandler currentHandle = _mainStage.getOnCloseRequest();
+
+        _mainStage.setOnCloseRequest(ev -> {
+            for (GameOverListener listener : _gameOverListeners)
+            {
+                listener.onGameOver(_playingPair);
+            }
+
+            System.out.println("Game Over Events gestartet");
+
+            currentHandle.handle(ev);
+        });
     }
 
     public void init()
@@ -329,6 +345,29 @@ public class Game implements GemGeneratedListener,
     }
 
     @Override
+    public void onBombPlanted(BombJson bombJson)
+    {
+        for (BomberMan player : _players)
+        {
+            if (player.userId == bombJson.userId)
+            {
+                player.getBombs().placeOnGrid(bombJson.square, bombJson.itemId);
+                break;
+            }
+        }
+    }
+
+    public void onBombPlanted(Bomb bomb)
+    {
+        BombJson b = new BombJson();
+        b.itemId = bomb.itemId;
+        b.square = bomb.square;
+        b.userId = _myPlayer.userId;
+
+        _sendToWebSocket(b, "BombPlanted");
+    }
+
+    @Override
     public void onDirectionChanged(BomberMan player, Dir oldDirection, Dir newDirection)
     {
         if (_wsClient == null)
@@ -363,7 +402,7 @@ public class Game implements GemGeneratedListener,
     }
 
     @Override
-    public void onGemCollected(GemJson gem)
+    public void onGemCollected(ItemJson gem)
     {
         if (_wsClient == null)
         {
@@ -382,16 +421,7 @@ public class Game implements GemGeneratedListener,
 
     public void onGemCollected(Gem gem)
     {
-        if (_wsClient == null)
-        {
-            return;
-        }
-
-        WebSocketCommunicationObject o = new WebSocketCommunicationObject();
-        o.className = "GemCollected";
-        o.objectValue = gem.getGemJson();
-
-        _wsClient.sendMessage(new GsonBuilder().create().toJson(o, WebSocketCommunicationObject.class));
+        _sendItemToWebSocket(gem, "GemCollected");
     }
 
     private void _tick(GraphicsContext gc)
@@ -486,6 +516,7 @@ public class Game implements GemGeneratedListener,
             {
                 _bombs--;
                 bomb.addBombExplodedListener(this::onBombExploded);
+                onBombPlanted(bomb);
             }
         }
         else
@@ -566,5 +597,24 @@ public class Game implements GemGeneratedListener,
             }
 
         }
+    }
+
+    private void _sendItemToWebSocket(Item item, String className)
+    {
+        _sendToWebSocket(item.getItemJson(), className);
+    }
+
+    private void _sendToWebSocket(Object object, String className)
+    {
+        if (_wsClient == null)
+        {
+            return;
+        }
+
+        WebSocketCommunicationObject o = new WebSocketCommunicationObject();
+        o.className = className;
+        o.objectValue = object;
+
+        _wsClient.sendMessage(new GsonBuilder().create().toJson(o, WebSocketCommunicationObject.class));
     }
 }

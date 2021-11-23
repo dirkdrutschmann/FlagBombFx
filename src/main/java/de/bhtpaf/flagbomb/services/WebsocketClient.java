@@ -4,8 +4,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.bhtpaf.flagbomb.helper.BomberMan;
+import de.bhtpaf.flagbomb.helper.classes.json.BombJson;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
-import de.bhtpaf.flagbomb.helper.classes.json.GemJson;
+import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
@@ -30,15 +31,26 @@ public class WebsocketClient {
     List<GemGeneratedListener> _GemGeneratedListeners = new ArrayList<>();
     List<BomberManChangedListener> _BomberManChangedListeners = new ArrayList<>();
     List<GemCollectedListener> _GemCollectedListeners = new ArrayList<>();
+    List<BombPlantedListener> _BombPlantedListeners = new ArrayList<>();
 
+    private URI _endpoint;
 
     Session userSession = null;
 
     public WebsocketClient(URI endpointURI) {
-        try {
+        _endpoint = endpointURI;
+        _connect();
+    }
+
+    private void _connect()
+    {
+        try
+        {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            container.connectToServer(this, endpointURI);
-        } catch (Exception e) {
+            container.connectToServer(this, _endpoint);
+        }
+        catch (Exception e)
+        {
             throw new RuntimeException(e);
         }
     }
@@ -116,7 +128,7 @@ public class WebsocketClient {
                 }
             }
 
-            // Neuer Gem generiert
+            // New Gem
             else if(jObject.get("class").getAsString().equals("Gem"))
             {
                 int x = jObject.get("objectValue").getAsJsonObject().get("square").getAsJsonObject().get("downLeft").getAsJsonObject().get("x").getAsInt();
@@ -138,10 +150,10 @@ public class WebsocketClient {
                 }
             }
 
-            // Gem eingesammel
+            // Gem collected
             else if (jObject.get("class").getAsString().equals("GemCollected"))
             {
-                GemJson gem = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), GemJson.class);
+                ItemJson gem = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), ItemJson.class);
 
                 for(GemCollectedListener listener : _GemCollectedListeners)
                 {
@@ -157,6 +169,17 @@ public class WebsocketClient {
                 for(BomberManChangedListener listener : _BomberManChangedListeners)
                 {
                     listener.onBombermanChangedListener(bomberman);
+                }
+            }
+
+            // Bomb planted
+            else if (jObject.get("class").getAsString().equals("BombPlanted"))
+            {
+                BombJson bombJson = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), BombJson.class);
+
+                for (BombPlantedListener listener : _BombPlantedListeners)
+                {
+                    listener.onBombPlanted(bombJson);
                 }
             }
         }
@@ -216,12 +239,22 @@ public class WebsocketClient {
         _GemCollectedListeners.add(listener);
     }
 
+    public void addBombPlantedListener(BombPlantedListener listener)
+    {
+        _BombPlantedListeners.add(listener);
+    }
+
     /**
      * Send a message.
      *
      * @param message
      */
     public void sendMessage(String message) {
+        if (this.userSession == null)
+        {
+            _connect();
+        }
+
         this.userSession.getAsyncRemote().sendText(message);
     }
 }

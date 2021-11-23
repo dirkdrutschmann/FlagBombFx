@@ -1,9 +1,8 @@
 package de.bhtpaf.flagbomb.helper.interfaces.eventListener;
 
-import de.bhtpaf.flagbomb.helper.classes.json.GemJson;
-import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
+import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 
 public interface GemCollectedListener
 {
-    void onGemCollected(GemJson gem);
+    void onGemCollected(ItemJson gem);
 }

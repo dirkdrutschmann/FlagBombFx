@@ -1,6 +1,7 @@
 package de.bhtpaf.flagbomb.helper.classes.map.items;
 
 import com.google.gson.annotations.Expose;
+import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Coord;
 import de.bhtpaf.flagbomb.helper.classes.map.Square;
 import javafx.scene.canvas.GraphicsContext;
@@ -44,6 +45,15 @@ public abstract class Item
     protected Square getInitPosition()
     {
         return _initSquare;
+    }
+
+    public ItemJson getItemJson()
+    {
+        ItemJson json = new ItemJson();
+        json.itemId = itemId;
+        json.square = square;
+
+        return json;
     }
 
     public abstract void draw(GraphicsContext gc);
