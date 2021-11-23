@@ -86,7 +86,7 @@ public class WebsocketClient {
     @OnMessage
     public void onMessage(String message)
     {
-        System.out.println(message);
+        System.out.println("RECEIVE: " + message);
 
         try
         {
@@ -256,5 +256,7 @@ public class WebsocketClient {
         }
 
         this.userSession.getAsyncRemote().sendText(message);
+
+        System.out.println("SENT => " + message);
     }
 }

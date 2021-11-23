@@ -16,19 +16,29 @@ public abstract class Item
     @Expose
     public Square square;
 
-    private final Square _initSquare;
+    private final int x;
+
+    private final int y;
+
+    private final int width;
 
     public Item (int x, int y, int width)
     {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+
         this.square = new Square(x, y, width);
-        this._initSquare = new Square(x, y, width);
         this.itemId = UUID.randomUUID().toString();
     }
 
     public Item (int x, int y, int width, String itemId)
     {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+
         this.square = new Square(x, y, width);
-        this._initSquare = new Square(x, y, width);
         this.itemId = itemId;
     }
 
@@ -44,7 +54,7 @@ public abstract class Item
 
     protected Square getInitPosition()
     {
-        return _initSquare;
+        return new Square(x, y, width);
     }
 
     public ItemJson getItemJson()
