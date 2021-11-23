@@ -139,6 +139,7 @@ public class Game implements GemGeneratedListener,
                 _wsClient.addGemGeneratedListener(this::onGemGenerated);
                 _wsClient.addBomberManChangedListener(this::onBombermanChangedListener);
                 _wsClient.addGemCollectedListener(this::onGemCollected);
+                _wsClient.addBombPlantedListener(this::onBombPlanted);
             }
 
             _bomberManSize = _squareFactor;
@@ -351,7 +352,8 @@ public class Game implements GemGeneratedListener,
         {
             if (player.userId == bombJson.userId)
             {
-                player.getBombs().placeOnGrid(bombJson.square, bombJson.itemId);
+                Bomb b = player.getBombs().placeOnGrid(bombJson.square, bombJson.itemId);
+                b.addBombExplodedListener(this::onBombExploded);
                 break;
             }
         }

@@ -84,12 +84,14 @@ public class Bombs implements Collection<Bomb>
         return null;
     }
 
-    public void placeOnGrid(Square square, String itemId)
+    public Bomb placeOnGrid(Square square, String itemId)
     {
         Bomb bomb = new Bomb(square, _stateImage, _soundBoom);
         bomb.itemId = itemId;
 
         _bombs.add(bomb);
+
+        return bomb;
     }
 
     @Override

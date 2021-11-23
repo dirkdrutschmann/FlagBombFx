@@ -135,6 +135,14 @@ public class BomberMan extends Item
         Media gameOverMusic = new Media(FlagBomb.class.getResource("sounds/gameover.wav").toString());
         MediaPlayer hitPlayer = new MediaPlayer(gameOverMusic);
         hitPlayer.play();
+
+        Dir oldDirection = _direction;
+        setDirection(Dir.STAND, false);
+
+        for (DirectionChangedListener listener : _directionChangedListeners)
+        {
+            listener.onDirectionChanged(this, oldDirection, _direction);
+        }
     }
 
     public void addDirectionChangedListeners(DirectionChangedListener listener)
