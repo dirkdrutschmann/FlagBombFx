@@ -411,7 +411,7 @@ public class Game implements GemGeneratedListener,
 
         for (Gem g : _gemList)
         {
-            if (gem.itemId.equals(gem.itemId))
+            if (g.itemId.equals(gem.itemId))
             {
                 _gemList.remove(g);
                 break;
@@ -441,6 +441,15 @@ public class Game implements GemGeneratedListener,
             if (_myPlayer.getDirection() != Dir.STAND)
             {
                 _myPlayer.setDirection(Dir.STAND);
+            }
+        }
+
+        // Draw all other players
+        for (BomberMan player : _players)
+        {
+            if (player.userId != _myPlayer.userId)
+            {
+                player.doStep();
             }
         }
 
