@@ -3,7 +3,7 @@ package de.bhtpaf.flagbomb.helper;
 import com.google.gson.GsonBuilder;
 import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.classes.User;
-import de.bhtpaf.flagbomb.helper.classes.json.BombJson;
+import de.bhtpaf.flagbomb.helper.classes.json.ExtendedItemJson;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
 import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.*;
@@ -30,7 +30,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.beans.EventHandler;
 import java.util.*;
 
 public class Game implements GemGeneratedListener,
@@ -39,7 +38,8 @@ public class Game implements GemGeneratedListener,
                              BomberManChangedListener,
                              GemCollectedListener,
                              BombPlantedListener,
-                             GameOverSetListener
+                             GameOverSetListener,
+                             FlagCollectedListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -142,6 +142,7 @@ public class Game implements GemGeneratedListener,
                 _wsClient.addGemCollectedListener(this::onGemCollected);
                 _wsClient.addBombPlantedListener(this::onBombPlanted);
                 _wsClient.addGameOverSetListener(this::onGameOverSet);
+                _wsClient.addFlagCollectedListener(this::onFlagCollected);
             }
 
             _bomberManSize = _squareFactor;
@@ -349,7 +350,7 @@ public class Game implements GemGeneratedListener,
     }
 
     @Override
-    public void onBombPlanted(BombJson bombJson)
+    public void onBombPlanted(ExtendedItemJson bombJson)
     {
         for (BomberMan player : _players)
         {
@@ -364,12 +365,46 @@ public class Game implements GemGeneratedListener,
 
     public void onBombPlanted(Bomb bomb)
     {
-        BombJson b = new BombJson();
+        ExtendedItemJson b = new ExtendedItemJson();
         b.itemId = bomb.itemId;
         b.square = bomb.square;
         b.userId = _myPlayer.userId;
 
         _sendToWebSocket(b, "BombPlanted");
+    }
+
+    @Override
+    public void onFlagCollected(ExtendedItemJson flagJson)
+    {
+        for (BomberMan player : _players)
+        {
+            // Sammelnden Spieler finden
+            if (player.userId != flagJson.userId)
+            {
+                continue;
+            }
+
+            // Gesammelte Flag finden
+            for (BomberMan playerFlag : _players)
+            {
+                if (!playerFlag.getOwnedFlag().itemId.equals(flagJson.itemId))
+                {
+                    continue;
+                }
+
+                player.capturedFlag = playerFlag.getOwnedFlag();
+            }
+        }
+    }
+
+    public void onFlagCollected(int userId, Flag flag)
+    {
+        ExtendedItemJson f = new ExtendedItemJson();
+        f.itemId = flag.itemId;
+        f.square = flag.square;
+        f.userId = userId;
+
+        _sendToWebSocket(f, "FlagCollected");
     }
 
     @Override
@@ -588,6 +623,7 @@ public class Game implements GemGeneratedListener,
                 else if (item instanceof Flag && _myPlayer.getOwnedFlag() != (Flag)item && _myPlayer.capturedFlag == null)
                 {
                     _myPlayer.capturedFlag = (Flag)item;
+                    onFlagCollected(_myPlayer.userId, (Flag)item);
                 }
                 else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item && _myPlayer.capturedFlag != null)
                 {
@@ -637,4 +673,5 @@ public class Game implements GemGeneratedListener,
 
         _wsClient.sendMessage(new GsonBuilder().create().toJson(o, WebSocketCommunicationObject.class));
     }
+
 }

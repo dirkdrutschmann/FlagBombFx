@@ -4,7 +4,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.bhtpaf.flagbomb.helper.BomberMan;
-import de.bhtpaf.flagbomb.helper.classes.json.BombJson;
+import de.bhtpaf.flagbomb.helper.classes.json.ExtendedItemJson;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
 import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
@@ -33,6 +33,7 @@ public class WebsocketClient {
     List<GemCollectedListener> _GemCollectedListeners = new ArrayList<>();
     List<BombPlantedListener> _BombPlantedListeners = new ArrayList<>();
     List<GameOverSetListener> _GameOverSetListeners = new ArrayList<>();
+    List<FlagCollectedListener> _FlagCollectedListeners = new ArrayList<>();
 
     private URI _endpoint;
 
@@ -176,11 +177,22 @@ public class WebsocketClient {
             // Bomb planted
             else if (jObject.get("class").getAsString().equals("BombPlanted"))
             {
-                BombJson bombJson = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), BombJson.class);
+                ExtendedItemJson bombJson = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), ExtendedItemJson.class);
 
                 for (BombPlantedListener listener : _BombPlantedListeners)
                 {
                     listener.onBombPlanted(bombJson);
+                }
+            }
+
+            // Flag collected
+            else if (jObject.get("class").getAsString().equals("FlagCollected"))
+            {
+                ExtendedItemJson flagJson = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), ExtendedItemJson.class);
+
+                for (FlagCollectedListener listener : _FlagCollectedListeners)
+                {
+                    listener.onFlagCollected(flagJson);
                 }
             }
 
@@ -257,6 +269,11 @@ public class WebsocketClient {
     public void addGameOverSetListener(GameOverSetListener listener)
     {
         _GameOverSetListeners.add(listener);
+    }
+
+    public void addFlagCollectedListener(FlagCollectedListener listener)
+    {
+        _FlagCollectedListeners.add(listener);
     }
 
     /**

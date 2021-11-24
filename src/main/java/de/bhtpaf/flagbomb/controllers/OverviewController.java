@@ -618,6 +618,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
             Platform.setImplicitExit(true);
         });
 
+        _waitingForPartnerThread.setDaemon(true);
         _waitingForPartnerThread.start();
     }
 

@@ -1,8 +1,6 @@
 package de.bhtpaf.flagbomb.helper.classes.json;
 
-public class BombJson extends ItemJson
+public class ExtendedItemJson extends ItemJson
 {
     public int userId;
-
-
 }
