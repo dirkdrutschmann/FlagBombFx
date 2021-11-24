@@ -32,6 +32,7 @@ public class WebsocketClient {
     List<BomberManChangedListener> _BomberManChangedListeners = new ArrayList<>();
     List<GemCollectedListener> _GemCollectedListeners = new ArrayList<>();
     List<BombPlantedListener> _BombPlantedListeners = new ArrayList<>();
+    List<GameOverSetListener> _GameOverSetListeners = new ArrayList<>();
 
     private URI _endpoint;
 
@@ -182,6 +183,15 @@ public class WebsocketClient {
                     listener.onBombPlanted(bombJson);
                 }
             }
+
+            // GameOver set
+            else if (jObject.get("class").getAsString().equals("GameOverSet"))
+            {
+                for (GameOverSetListener listener : _GameOverSetListeners)
+                {
+                    listener.onGameOverSet();
+                }
+            }
         }
         catch (Exception e)
         {
@@ -242,6 +252,11 @@ public class WebsocketClient {
     public void addBombPlantedListener(BombPlantedListener listener)
     {
         _BombPlantedListeners.add(listener);
+    }
+
+    public void addGameOverSetListener(GameOverSetListener listener)
+    {
+        _GameOverSetListeners.add(listener);
     }
 
     /**

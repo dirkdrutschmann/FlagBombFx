@@ -38,7 +38,8 @@ public class Game implements GemGeneratedListener,
                              DirectionChangedListener,
                              BomberManChangedListener,
                              GemCollectedListener,
-                             BombPlantedListener
+                             BombPlantedListener,
+                             GameOverSetListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -140,6 +141,7 @@ public class Game implements GemGeneratedListener,
                 _wsClient.addBomberManChangedListener(this::onBombermanChangedListener);
                 _wsClient.addGemCollectedListener(this::onGemCollected);
                 _wsClient.addBombPlantedListener(this::onBombPlanted);
+                _wsClient.addGameOverSetListener(this::onGameOverSet);
             }
 
             _bomberManSize = _squareFactor;
@@ -296,6 +298,7 @@ public class Game implements GemGeneratedListener,
                 else if (key.getCode() == KeyCode.ESCAPE)
                 {
                     gameOver = true;
+                    _sendToWebSocket(null, "GameOverSet");
                 }
             });
 
@@ -424,6 +427,12 @@ public class Game implements GemGeneratedListener,
     public void onGemCollected(Gem gem)
     {
         _sendItemToWebSocket(gem, "GemCollected");
+    }
+
+    @Override
+    public void onGameOverSet()
+    {
+        gameOver = true;
     }
 
     private void _tick(GraphicsContext gc)
