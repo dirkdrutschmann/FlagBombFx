@@ -15,6 +15,7 @@ public class Grid {
     public int squareFactor;
     public int height;
     public int width;
+    public int captureFlagCount;
 
     public List<List<Tile>> columns = new ArrayList();
     public int columnCount;
@@ -23,7 +24,7 @@ public class Grid {
     public Grid ()
     {}
 
-    public Grid(int width, int height, int squareFactor)
+    public Grid(int width, int height, int squareFactor, int captureFlagCount)
     {
         this.columnCount = width / squareFactor;
         this.rowCount = (height - 20) / squareFactor;
@@ -31,6 +32,7 @@ public class Grid {
         this.width = width;
         this.height = height;
         this.squareFactor = squareFactor;
+        this.captureFlagCount = captureFlagCount;
     }
 
     public void draw (GraphicsContext gc)

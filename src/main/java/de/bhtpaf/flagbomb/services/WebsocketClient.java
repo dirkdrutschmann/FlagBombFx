@@ -8,6 +8,7 @@ import de.bhtpaf.flagbomb.helper.classes.json.ExtendedItemJson;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
 import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
+import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.flagbomb.helper.interfaces.eventListener.*;
@@ -35,6 +36,7 @@ public class WebsocketClient {
     List<GameOverSetListener> _GameOverSetListeners = new ArrayList<>();
     List<FlagCollectedListener> _FlagCollectedListeners = new ArrayList<>();
     List<FlagCapturedListener> _FlagCapturedListeners = new ArrayList<>();
+    List<PlayerWonListener> _PlayerWonListener = new ArrayList<>();
 
     private URI _endpoint;
 
@@ -210,6 +212,16 @@ public class WebsocketClient {
                 }
             }
 
+            else if (jObject.get("class").getAsString().equals("PlayerWon"))
+            {
+                BombermanJson player = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), BombermanJson.class);
+
+                for (PlayerWonListener listener : _PlayerWonListener)
+                {
+                    listener.onPlayerWon(player);
+                }
+            }
+
             // GameOver set
             else if (jObject.get("class").getAsString().equals("GameOverSet"))
             {
@@ -293,6 +305,11 @@ public class WebsocketClient {
     public void addFlagCapturedListener(FlagCapturedListener listener)
     {
         _FlagCapturedListeners.add(listener);
+    }
+
+    public void addPlayerWonListener(PlayerWonListener listener)
+    {
+        _PlayerWonListener.add(listener);
     }
 
     /**

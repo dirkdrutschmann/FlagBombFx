@@ -44,6 +44,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
     private final int _stdGameWidth = 1000;
     private final int _stdGameSquareFactor = 30;
     private final int _stdGameBombs = 10;
+    private final int _stdCaptureFlagCount = 10;
 
     private Grid _mapGeneratedByWebSocket = null;
     private PlayingPair _playingPair = null;
@@ -85,6 +86,9 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
 
     @FXML
     public TextField edt_game_squareFactor;
+
+    @FXML
+    public TextField edt_game_captureFlagCount;
 
     @FXML
     public Button bt_game_start;
@@ -151,9 +155,23 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
         int speed = _getValue(edt_game_speed, _stdGameSpeed);
         int width = _getValue(edt_game_width, _stdGameWidth);
         int squareFactor = _getValue(edt_game_squareFactor, _stdGameSquareFactor);
+        int captureFlagCount = _getValue(edt_game_captureFlagCount, _stdCaptureFlagCount);
         int bombs = _getValue(edt_game_bombs, _stdGameBombs);
 
-        Game game = new Game(_api, _wsClient, _mainStage, _user, speed, width, squareFactor, bombs, _mapGeneratedByWebSocket, _playersGeneratedByWebSocket, _playingPair);
+        Game game = new Game(
+                _api,
+                _wsClient,
+                _mainStage,
+                _user,
+                speed,
+                width,
+                squareFactor,
+                captureFlagCount,
+                bombs,
+                _mapGeneratedByWebSocket,
+                _playersGeneratedByWebSocket,
+                _playingPair
+        );
 
         new Thread(() -> {
             try
@@ -236,6 +254,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
         edt_game_speed.textProperty().set(Integer.toString(_stdGameSpeed));
         edt_game_width.textProperty().set(Integer.toString(_stdGameWidth));
         edt_game_squareFactor.textProperty().set(Integer.toString(_stdGameSquareFactor));
+        edt_game_captureFlagCount.textProperty().set(Integer.toString(_stdCaptureFlagCount));
 
         edt_game_bombs.textProperty().set(Integer.toString(_stdGameBombs));
 
@@ -356,7 +375,8 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
                                 Grid mapConfig = new Grid(
                                         _getValue(edt_game_width, _stdGameWidth),
                                         _getValue(edt_game_width, _stdGameWidth),
-                                        _getValue(edt_game_squareFactor, _stdGameSquareFactor)
+                                        _getValue(edt_game_squareFactor, _stdGameSquareFactor),
+                                        _getValue(edt_game_captureFlagCount, _stdCaptureFlagCount)
                                 );
 
                                 StdResponse result = _api.sendPlayRequest(_user, user.id, mapConfig);

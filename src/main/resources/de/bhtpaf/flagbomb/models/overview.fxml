@@ -32,6 +32,9 @@
                   <Label layoutX="82.0" layoutY="170.0" text="Kachelgröße" />
                   <TextField fx:id="edt_game_squareFactor" layoutX="201.0" layoutY="166.0" />
 
+                  <Label layoutX="82.0" layoutY="206.0" text="Flaggeneroberungen" />
+                  <TextField fx:id="edt_game_captureFlagCount" layoutX="201.0" layoutY="202.0" />
+
                   <Button fx:id="bt_game_start" layoutX="303.0" layoutY="250.0" mnemonicParsing="false" onAction="#startGame" prefHeight="32.0" prefWidth="90.0" text="Spiel starten" />
 
                   <ImageView fx:id="img_logo" fitHeight="187.0" fitWidth="217.0" layoutX="256.0" layoutY="298.0" pickOnBounds="true" preserveRatio="true" />

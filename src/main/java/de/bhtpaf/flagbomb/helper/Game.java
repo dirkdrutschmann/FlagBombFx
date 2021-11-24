@@ -40,7 +40,8 @@ public class Game implements GemGeneratedListener,
                              BombPlantedListener,
                              GameOverSetListener,
                              FlagCollectedListener,
-                             FlagCapturedListener
+                             FlagCapturedListener,
+                             PlayerWonListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -58,6 +59,7 @@ public class Game implements GemGeneratedListener,
     private final int fontSizeTop = 20;
     private final int _width;
     private final int _height;
+    private final int _captureFlagCount;
 
     private BomberMan _myPlayer;
     private int _squareFactor;
@@ -70,7 +72,8 @@ public class Game implements GemGeneratedListener,
 
     private Dir _direction = Dir.RIGHT;
 
-    private boolean gameOver = false;
+    private boolean _gameOver = false;
+    private BomberMan _playerWon = null;
 
     private Media soundCollect = new Media(FlagBomb.class.getResource("sounds/collect.wav").toString());
     private Media backgroundMusic = new Media(FlagBomb.class.getResource("sounds/sound.wav").toString());
@@ -90,6 +93,7 @@ public class Game implements GemGeneratedListener,
             int speed,
             int width,
             int squareFactor,
+            int captureFlagCount,
             int bombs,
             Grid grid,
             List<BomberMan> players,
@@ -105,6 +109,7 @@ public class Game implements GemGeneratedListener,
         _speed = speed;
         _width = width;
         _squareFactor = squareFactor;
+        _captureFlagCount = captureFlagCount;
         _bombs = bombs;
         _flags = 0;
 
@@ -147,6 +152,7 @@ public class Game implements GemGeneratedListener,
                 _wsClient.addGameOverSetListener(this::onGameOverSet);
                 _wsClient.addFlagCollectedListener(this::onFlagCollected);
                 _wsClient.addFlagCapturedListener(this::onFlagCaptured);
+                _wsClient.addPlayerWonListener(this::onPlayerWon);
             }
 
             _bomberManSize = _squareFactor;
@@ -242,13 +248,24 @@ public class Game implements GemGeneratedListener,
                         _tick(gc);
                     }
 
-                    if (gameOver)
+                    if (_gameOver || _playerWon != null)
                     {
                         stop();
 
                         gc.setFill(Color.BLACK);
                         gc.setFont(new Font("", 50));
-                        String string = "GAME OVER";
+
+                        String string = "";
+
+                        if (_gameOver)
+                        {
+                            string = "GAME OVER";
+                        }
+                        else
+                        {
+                            string = _playerWon.username + " hat gewonnen.";
+                        }
+
                         double factor = string.length() * fontSizeTop * 0.5;
                         gc.fillText(string, _height / 2 - factor, _width / 2);
 
@@ -315,7 +332,7 @@ public class Game implements GemGeneratedListener,
                 }
                 else if (key.getCode() == KeyCode.ESCAPE)
                 {
-                    gameOver = true;
+                    _gameOver = true;
                     _sendToWebSocket(null, "GameOverSet");
                 }
             });
@@ -341,8 +358,28 @@ public class Game implements GemGeneratedListener,
         _mainStage.setScene(_gameScene);
     }
 
-    public void addOnGameOverListener(GameOverListener listener) {
+    public void addOnGameOverListener(GameOverListener listener)
+    {
         _gameOverListeners.add(listener);
+    }
+
+    @Override
+    public void onPlayerWon(BombermanJson player)
+    {
+        for (BomberMan p : _players)
+        {
+            if (player.userId == p.userId)
+            {
+                _playerWon = p;
+                break;
+            }
+        }
+    }
+
+    public void onPlayerWon()
+    {
+        BombermanJson b = _playerWon.getForJson();
+        _sendToWebSocket(b, "PlayerWon");
     }
 
     @Override
@@ -510,7 +547,7 @@ public class Game implements GemGeneratedListener,
     @Override
     public void onGameOverSet()
     {
-        gameOver = true;
+        _gameOver = true;
     }
 
     private void _tick(GraphicsContext gc)
@@ -553,7 +590,7 @@ public class Game implements GemGeneratedListener,
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("", fontSizeTop));
         String menuBar = "BOMBS: " + _bombs;
-        menuBar += "    FLAGS: " + _flags;
+        menuBar += "   FLAGS: " + _flags + " / " + _captureFlagCount;
 
         gc.fillText(menuBar, 10, 20);
         gc.setFill(Color.WHITE);
@@ -626,7 +663,7 @@ public class Game implements GemGeneratedListener,
             return;
         }
 
-        _grid = new Grid(_width, _height, _squareFactor);
+        _grid = new Grid(_width, _height, _squareFactor, _captureFlagCount);
         _grid = _api.getGrid(_grid, _user);
     }
 
@@ -674,6 +711,12 @@ public class Game implements GemGeneratedListener,
 
                     _myPlayer.capturedFlag = null;
                     _flags++;
+
+                    if (_flags >= _captureFlagCount)
+                    {
+                        _playerWon = _myPlayer;
+                        onPlayerWon();
+                    }
                 }
 
                 for (BomberMan player : _players)
@@ -717,5 +760,4 @@ public class Game implements GemGeneratedListener,
 
         _wsClient.sendMessage(new GsonBuilder().create().toJson(o, WebSocketCommunicationObject.class));
     }
-
 }
