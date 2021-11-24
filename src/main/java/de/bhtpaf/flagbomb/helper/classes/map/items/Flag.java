@@ -4,6 +4,7 @@ import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.classes.map.Square;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 public class Flag extends Item
 {
@@ -36,9 +37,32 @@ public class Flag extends Item
             public String toString() {
                 return "yellow";
             }
+        };
+
+
+        public javafx.scene.paint.Color toJavaFXColor()
+        {
+            javafx.scene.paint.Color color;
+
+            if (this == BLUE)
+            {
+                color = javafx.scene.paint.Color.BLUE;
+            }
+            else if (this == RED)
+            {
+                color = javafx.scene.paint.Color.RED;
+            }
+            else if (this == GREEN)
+            {
+                color = javafx.scene.paint.Color.GREEN;
+            }
+            else
+            {
+                color = javafx.scene.paint.Color.YELLOW;
+            }
+
+            return color;
         }
-
-
     };
 
     private final Image _blueFlagImage = new Image(FlagBomb.class.getResourceAsStream("flag/flag_blue.png"));
@@ -96,8 +120,14 @@ public class Flag extends Item
         gc.drawImage(flagImage, square.downLeft.x, square.downLeft.y, _flagSize, _flagSize);
     }
 
-    public String getColor(){
+    public String getColor()
+    {
         return this._color.toString();
+    }
+
+    public javafx.scene.paint.Color getJavaFXColor()
+    {
+        return this._color.toJavaFXColor();
     }
 
     public void respawn()

@@ -2,6 +2,7 @@ package de.bhtpaf.flagbomb.helper;
 
 import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
+import de.bhtpaf.flagbomb.helper.classes.map.Coord;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Bombs;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Item;
@@ -10,6 +11,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.text.Font;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,12 @@ public class BomberMan extends Item
     @Override
     public void draw(GraphicsContext gc)
     {
+        Coord mid = new Coord(this.getMiddleCoord().x, this.getMiddleCoord().y);
+        mid.x -= username.length() * 2;
+        mid.y += 10;
+        gc.setFill(_ownedFlag.getJavaFXColor());
+        gc.setFont(new Font("", 10));
+        gc.fillText(username, mid.x, mid.y);
         gc.drawImage(_bomberMan, square.downLeft.x, square.downLeft.y, width, width);
     }
 

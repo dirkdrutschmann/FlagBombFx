@@ -117,6 +117,7 @@ public class Game implements GemGeneratedListener,
         javafx.event.EventHandler currentHandle = _mainStage.getOnCloseRequest();
 
         _mainStage.setOnCloseRequest(ev -> {
+            _sendToWebSocket(null, "GameOverSet");
             for (GameOverListener listener : _gameOverListeners)
             {
                 listener.onGameOver(_playingPair);
