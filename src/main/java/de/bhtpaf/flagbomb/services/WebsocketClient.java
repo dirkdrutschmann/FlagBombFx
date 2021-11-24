@@ -34,6 +34,7 @@ public class WebsocketClient {
     List<BombPlantedListener> _BombPlantedListeners = new ArrayList<>();
     List<GameOverSetListener> _GameOverSetListeners = new ArrayList<>();
     List<FlagCollectedListener> _FlagCollectedListeners = new ArrayList<>();
+    List<FlagCapturedListener> _FlagCapturedListeners = new ArrayList<>();
 
     private URI _endpoint;
 
@@ -197,6 +198,17 @@ public class WebsocketClient {
                 }
             }
 
+            // Flag captured
+            else if (jObject.get("class").getAsString().equals("FlagCaptured"))
+            {
+                ExtendedItemJson flagJson = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), ExtendedItemJson.class);
+
+                for (FlagCapturedListener listener : _FlagCapturedListeners)
+                {
+                    listener.onFlagCaptured(flagJson);
+                }
+            }
+
             // GameOver set
             else if (jObject.get("class").getAsString().equals("GameOverSet"))
             {
@@ -275,6 +287,11 @@ public class WebsocketClient {
     public void addFlagCollectedListener(FlagCollectedListener listener)
     {
         _FlagCollectedListeners.add(listener);
+    }
+
+    public void addFlagCapturedListener(FlagCapturedListener listener)
+    {
+        _FlagCapturedListeners.add(listener);
     }
 
     /**

@@ -39,7 +39,8 @@ public class Game implements GemGeneratedListener,
                              GemCollectedListener,
                              BombPlantedListener,
                              GameOverSetListener,
-                             FlagCollectedListener
+                             FlagCollectedListener,
+                             FlagCapturedListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
 
@@ -408,6 +409,32 @@ public class Game implements GemGeneratedListener,
     }
 
     @Override
+    public void onFlagCaptured(ExtendedItemJson flagJson)
+    {
+        for (BomberMan player : _players)
+        {
+            if (player.userId != flagJson.userId)
+            {
+                continue;
+            }
+
+            player.capturedFlag.respawn();
+            player.capturedFlag = null;
+            _flags--;
+        }
+    }
+
+    public void onFlagCaptured(int userId, Flag flag)
+    {
+        ExtendedItemJson f = new ExtendedItemJson();
+        f.itemId = flag.itemId;
+        f.square = flag.square;
+        f.userId = userId;
+
+        _sendToWebSocket(f, "FlagCaptured");
+    }
+
+    @Override
     public void onDirectionChanged(BomberMan player, Dir oldDirection, Dir newDirection)
     {
         if (_wsClient == null)
@@ -628,6 +655,8 @@ public class Game implements GemGeneratedListener,
                 else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item && _myPlayer.capturedFlag != null)
                 {
                     _myPlayer.capturedFlag.respawn();
+                    onFlagCaptured(_myPlayer.userId, _myPlayer.capturedFlag);
+
                     _myPlayer.capturedFlag = null;
                     _flags++;
                 }
