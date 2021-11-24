@@ -64,6 +64,7 @@ public class Game implements GemGeneratedListener,
     private int _bomberManSize;
     private int _bombs;
     private int _flags;
+    private String _playersCaption;
 
     private Grid _grid = null;
 
@@ -144,6 +145,7 @@ public class Game implements GemGeneratedListener,
                 _wsClient.addBombPlantedListener(this::onBombPlanted);
                 _wsClient.addGameOverSetListener(this::onGameOverSet);
                 _wsClient.addFlagCollectedListener(this::onFlagCollected);
+                _wsClient.addFlagCapturedListener(this::onFlagCaptured);
             }
 
             _bomberManSize = _squareFactor;
@@ -164,7 +166,8 @@ public class Game implements GemGeneratedListener,
                                         _bomberManSize,
                                         Flag.Color.BLUE
                                 ),
-                                _user.id
+                                _user.id,
+                                _user.username
                         )
                 );
 
@@ -180,7 +183,8 @@ public class Game implements GemGeneratedListener,
                                     _bomberManSize,
                                     Flag.Color.RED
                                 ),
-                                _user.id + 1
+                                _user.id + 1,
+                                "Anonymous"
                         )
                 );
             }
@@ -196,6 +200,17 @@ public class Game implements GemGeneratedListener,
                         break;
                     }
                 }
+            }
+
+            _playersCaption = "";
+            for (BomberMan player : _players)
+            {
+                if (!_playersCaption.isEmpty())
+                {
+                    _playersCaption += " vs. ";
+                }
+
+                _playersCaption += player.username;
             }
 
             backgroundPlayer.setAutoPlay(true);
@@ -537,11 +552,7 @@ public class Game implements GemGeneratedListener,
         gc.setFill(Color.WHITE);
         gc.setFont(new Font("", fontSizeTop));
         String menuBar = "BOMBS: " + _bombs;
-
-        if (_flags > 0)
-        {
-            menuBar += "        FLAGS: " + _flags;
-        }
+        menuBar += "    FLAGS: " + _flags;
 
         gc.fillText(menuBar, 10, 20);
         gc.setFill(Color.WHITE);
@@ -549,9 +560,8 @@ public class Game implements GemGeneratedListener,
         gc.setFont(new Font("", fontSizeTop));
 
         //TO DO DYNAMIC WIDTH
-        String string = "Player 1: " + (_user != null ? _user.username : "Anonymous");
-        double factor = string.length() * fontSizeTop * 0.5;
-        gc.fillText(string, _width - factor, 20);
+        double factor = _playersCaption.length() * fontSizeTop * 0.5;
+        gc.fillText(_playersCaption, _width - factor, 20);
 
         for (BomberMan player : _players)
         {
@@ -559,7 +569,6 @@ public class Game implements GemGeneratedListener,
             player.getBombs().updateBombs(gc, _grid);
             player.getOwnedFlag().draw(gc);
         }
-
 
         for (Gem gem : _gemList)
         {
@@ -634,6 +643,11 @@ public class Game implements GemGeneratedListener,
         {
             Tile tile = _grid.find(item.getMiddleCoord());
             Tile bm = _grid.find(_myPlayer.getMiddleCoord());
+
+            if (tile == null || bm == null)
+            {
+                return;
+            }
 
             if (tile.compare(bm))
             {

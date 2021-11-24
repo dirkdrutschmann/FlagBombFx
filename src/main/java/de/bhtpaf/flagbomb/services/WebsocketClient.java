@@ -123,7 +123,8 @@ public class WebsocketClient {
                             new GsonBuilder().create().fromJson(jFlag.get("color").getAsString(), Flag.Color.class),
                             jFlag.get("id").getAsString()
                     ),
-                    jBombermann.get("userId").getAsInt()
+                    jBombermann.get("userId").getAsInt(),
+                    jBombermann.get("username").getAsString()
                 );
 
                 for (BomberManGeneratedListener listener : _BomberManGeneratedListeners)

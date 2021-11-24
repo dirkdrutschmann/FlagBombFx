@@ -32,7 +32,9 @@ public class BomberMan extends Item
 
     public final int userId;
 
-    public BomberMan(int x, int y, int width, Flag ownedFlag, int id)
+    public final String username;
+
+    public BomberMan(int x, int y, int width, Flag ownedFlag, int id, String username)
     {
         super(x, y, width);
         this.width = width;
@@ -41,6 +43,7 @@ public class BomberMan extends Item
         _bombs = new Bombs(width, _ownedFlag.getColor());
         _direction = Dir.STAND;
         this.userId = id;
+        this.username = username;
     }
 
     @Override
