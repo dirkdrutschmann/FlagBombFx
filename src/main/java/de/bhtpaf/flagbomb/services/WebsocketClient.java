@@ -119,7 +119,8 @@ public class WebsocketClient {
                             jFlag.get("x").getAsInt(),
                             jFlag.get("y").getAsInt(),
                             jFlag.get("flagSize").getAsInt(),
-                            new GsonBuilder().create().fromJson(jFlag.get("color").getAsString(), Flag.Color.class)
+                            new GsonBuilder().create().fromJson(jFlag.get("color").getAsString(), Flag.Color.class),
+                            jFlag.get("id").getAsString()
                     ),
                     jBombermann.get("userId").getAsInt()
                 );

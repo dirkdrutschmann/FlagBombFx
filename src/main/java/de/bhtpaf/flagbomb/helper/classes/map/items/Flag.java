@@ -56,6 +56,14 @@ public class Flag extends Item
         _color = color;
     }
 
+    public Flag(int y, int x, int flagSize, Color color, String id)
+    {
+        super(x, y, flagSize);
+        this._flagSize =  flagSize - 2;
+        _color = color;
+        this.itemId = id;
+    }
+
     @Override
     public void draw(GraphicsContext gc)
     {
