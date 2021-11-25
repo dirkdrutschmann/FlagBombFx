@@ -699,29 +699,38 @@ public class Game implements GemGeneratedListener,
                     onGemCollected((Gem)item);
                     _gemList.remove(item);
                 }
+                // Fremde Flagge aufnehmen
                 else if (item instanceof Flag && _myPlayer.getOwnedFlag() != (Flag)item && _myPlayer.capturedFlag == null)
                 {
                     _myPlayer.capturedFlag = (Flag)item;
                     onFlagCollected(_myPlayer.userId, (Flag)item);
                 }
-                else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item && _myPlayer.capturedFlag != null)
+                // Hit der eigenen Flagge
+                else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item)
                 {
-                    _myPlayer.capturedFlag.respawn();
-                    onFlagCaptured(_myPlayer.userId, _myPlayer.capturedFlag);
-
-                    _myPlayer.capturedFlag = null;
-                    _flags++;
-
-                    if (_flags >= _captureFlagCount)
+                    // Eigene Fallge nicht am Spawn-Point
+                    if (item.square != item.getInitPosition())
                     {
-                        _playerWon = _myPlayer;
-                        onPlayerWon();
+                        _myPlayer.getOwnedFlag().respawn();
+                    }
+                    else if (_myPlayer.capturedFlag != null)
+                    {
+                        _myPlayer.capturedFlag.respawn();
+                        onFlagCaptured(_myPlayer.userId, _myPlayer.capturedFlag);
+
+                        _myPlayer.capturedFlag = null;
+                        _flags++;
+
+                        if (_flags >= _captureFlagCount) {
+                            _playerWon = _myPlayer;
+                            onPlayerWon();
+                        }
                     }
                 }
 
                 for (BomberMan player : _players)
                 {
-                    if (bm.compare(_grid.find(player.getMiddleCoord())))
+                    if (tile.compare(_grid.find(player.getMiddleCoord())))
                     {
                         if (_myPlayer.capturedFlag == player.getOwnedFlag())
                         {

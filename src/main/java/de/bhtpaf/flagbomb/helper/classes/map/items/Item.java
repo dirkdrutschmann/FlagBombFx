@@ -52,7 +52,7 @@ public abstract class Item
         return middle;
     }
 
-    protected Square getInitPosition()
+    public Square getInitPosition()
     {
         return new Square(x, y, width);
     }
