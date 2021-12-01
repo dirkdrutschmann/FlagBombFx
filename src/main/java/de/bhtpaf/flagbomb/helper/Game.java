@@ -719,7 +719,7 @@ public class Game implements GemGeneratedListener,
                 else if (item instanceof Flag && _myPlayer.getOwnedFlag() == (Flag)item)
                 {
                     // Eigene Fallge nicht am Spawn-Point
-                    if (item.square != item.getInitPosition())
+                    if (!item.square.compare(item.getInitPosition()))
                     {
                         _myPlayer.getOwnedFlag().respawn();
                     }
