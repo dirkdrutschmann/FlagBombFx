@@ -109,15 +109,25 @@ public class Game implements GemGeneratedListener,
         _speed = speed;
         _width = width;
         _squareFactor = squareFactor;
-        _captureFlagCount = captureFlagCount;
-        _bombs = bombs;
         _flags = 0;
+
+        _grid = grid;
+        _players = players;
+
+        if (_grid == null || _wsClient == null)
+        {
+            _captureFlagCount = captureFlagCount;
+            _bombs = bombs;
+        }
+        else
+        {
+            _captureFlagCount = _grid.captureFlagCount;
+            _bombs = _grid.bombsAtStart;
+        }
 
         _height = _width;
         _bomberManSize = _width / _squareFactor;
 
-        _grid = grid;
-        _players = players;
 
         javafx.event.EventHandler currentHandle = _mainStage.getOnCloseRequest();
 
@@ -663,7 +673,7 @@ public class Game implements GemGeneratedListener,
             return;
         }
 
-        _grid = new Grid(_width, _height, _squareFactor, _captureFlagCount);
+        _grid = new Grid(_width, _height, _squareFactor, _captureFlagCount, _bombs);
         _grid = _api.getGrid(_grid, _user);
     }
 

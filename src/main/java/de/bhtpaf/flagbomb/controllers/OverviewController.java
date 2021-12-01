@@ -376,7 +376,8 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
                                         _getValue(edt_game_width, _stdGameWidth),
                                         _getValue(edt_game_width, _stdGameWidth),
                                         _getValue(edt_game_squareFactor, _stdGameSquareFactor),
-                                        _getValue(edt_game_captureFlagCount, _stdCaptureFlagCount)
+                                        _getValue(edt_game_captureFlagCount, _stdCaptureFlagCount),
+                                        _getValue(edt_game_bombs, _stdGameBombs)
                                 );
 
                                 StdResponse result = _api.sendPlayRequest(_user, user.id, mapConfig);
