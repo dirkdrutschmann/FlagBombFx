@@ -19,6 +19,8 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -29,6 +31,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -144,6 +147,29 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
                 _mainStage.setScene(_previousScene);
             });
         }).start();
+    }
+
+    public void editUser(ActionEvent event)
+    {
+        event.consume();
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(FlagBomb.class.getResource("models/user.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1000, 600);
+
+            UserController controller = loader.getController();
+            controller.setMainStage(_mainStage);
+            controller.setApi(_api);
+            controller.setUser(_user);
+
+            _mainStage.setScene(scene);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            Util.showErrorMessageBox(e.getMessage());
+        }
     }
 
     public void startGame(ActionEvent event)

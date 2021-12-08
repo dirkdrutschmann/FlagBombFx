@@ -101,8 +101,8 @@ public class RegisterUserController
 
     @FXML
     public void filePicker(MouseEvent event) throws IOException {
-        setImage(null);
         event.consume();
+        setImage(null);
     }
 
     public void setImage(File file) {
