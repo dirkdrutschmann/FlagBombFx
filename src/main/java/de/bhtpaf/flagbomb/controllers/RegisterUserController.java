@@ -1,6 +1,7 @@
 package de.bhtpaf.flagbomb.controllers;
 
 import de.bhtpaf.flagbomb.FlagBomb;
+import de.bhtpaf.flagbomb.helper.Util;
 import de.bhtpaf.flagbomb.helper.classes.User;
 import de.bhtpaf.flagbomb.services.Api;
 import javafx.event.ActionEvent;
@@ -130,17 +131,13 @@ public class RegisterUserController
                 file = fileChooser.showOpenDialog(_mainStage);
             }
             if (file != null) {
-                if (isImage(file)) {
+                if (Util.isImage(file)) {
                     Image image = new Image(file.toURI().toString());
                     filePickerImage.setImage(image);
                     imageSet = true;
                     _image = file;
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Fehler");
-                    alert.setHeaderText("Die ausgewählte Datei ist kein Bild!");
-                    alert.setContentText("Bitte neue Datei auswählen.");
-                    alert.showAndWait();
+                    Util.showErrorMessageBox("Die ausgewählte Datei ist kein Bild!");
                 }
             }
         }
@@ -161,16 +158,5 @@ public class RegisterUserController
     public void setApi(Api api)
     {
         _api = api;
-    }
-
-    private boolean isImage(File file) {
-
-        boolean b = false;
-        try {
-            b = (ImageIO.read(file) != null);
-        } catch (IOException e) {
-            System.out.println("Image cannot be found");
-        }
-        return b;
     }
 }

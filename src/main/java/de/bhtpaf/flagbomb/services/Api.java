@@ -173,6 +173,40 @@ public class Api {
         return retValue;
     }
 
+    public StdResponse setUser(User user)
+    {
+        String path = _apiUrl + "/User/" + user.id;
+        System.out.println(user.toJson());
+        StringEntity entity = new StringEntity(user.toJson(), ContentType.APPLICATION_JSON);
+
+        HttpPost request = new HttpPost(path);
+        request.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+        request.setEntity(entity);
+
+        StdResponse returnValue = new StdResponse();
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(request);
+
+            HttpEntity responseEntity = response.getEntity();
+
+            returnValue = StdResponse.fromJson(_getStringFromInputStream(responseEntity.getContent()));
+
+            EntityUtils.consume(responseEntity);
+
+            response.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            returnValue.success = false;
+            returnValue.message = e.getMessage();
+        }
+
+        return returnValue;
+    }
+
     public List<User> getLoggedInUsers(User user)
     {
         String path = _apiUrl + "/User/All";

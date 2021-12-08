@@ -6,10 +6,7 @@ import de.bhtpaf.flagbomb.helper.Game;
 import de.bhtpaf.flagbomb.helper.Util;
 import de.bhtpaf.flagbomb.helper.classes.User;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.BomberManGeneratedListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.GameOverListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.LogoutEventListener;
-import de.bhtpaf.flagbomb.helper.interfaces.eventListener.MapGeneratedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.*;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPairStatus;
 import de.bhtpaf.flagbomb.helper.responses.StdResponse;
@@ -36,7 +33,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class OverviewController implements MapGeneratedListener, GameOverListener, BomberManGeneratedListener
+public class OverviewController implements MapGeneratedListener, GameOverListener, BomberManGeneratedListener, UserChangedListener
 {
     private boolean _StopAllThreads = false;
     private boolean _StopWaitingForPartnerThread = false;
@@ -162,6 +159,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
             controller.setMainStage(_mainStage);
             controller.setApi(_api);
             controller.setUser(_user);
+            controller.addUserChangedListener(this::onUserChanged);
 
             _mainStage.setScene(scene);
         }
@@ -170,6 +168,13 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
             e.printStackTrace();
             Util.showErrorMessageBox(e.getMessage());
         }
+    }
+
+    @Override
+    public void onUserChanged(User user)
+    {
+        _user = user;
+        initUser();
     }
 
     public void startGame(ActionEvent event)
@@ -257,7 +262,7 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
         _logoutEventListeners.add(listener);
     }
 
-    public void init()
+    public void initUser()
     {
         if (_user != null)
         {
@@ -266,6 +271,11 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
 
             lb_user.textProperty().set("Hallo " + _user.prename + "!");
         }
+    }
+
+    public void init()
+    {
+        initUser();
 
         if (img_logo.getImage() == null)
         {
@@ -1061,4 +1071,5 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
         _wsClient.addMapGeneratedListener(this::onMapGenerated);
         _wsClient.addBomberManGeneratedListener(this::onBomberManGenerated);
     }
+
 }

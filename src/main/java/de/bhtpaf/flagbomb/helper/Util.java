@@ -3,11 +3,18 @@ package de.bhtpaf.flagbomb.helper;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
 
-import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
+import javax.swing.text.html.ImageView;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 public class Util
 {
@@ -60,5 +67,47 @@ public class Util
         ByteArrayInputStream bis = new ByteArrayInputStream(decodedBytes);
 
         return bis;
+    }
+
+    public static String getBase64StringOfImage(File file)
+    {
+        String returnString = "";
+
+        if (file == null)
+        {
+            return returnString;
+        }
+
+        try
+        {
+            FileInputStream fileInputStreamReader = new FileInputStream(file);
+
+            byte[] bytes = new byte[(int) file.length()];
+            fileInputStreamReader.read(bytes);
+
+            returnString = Base64.getEncoder().encodeToString(bytes);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return returnString;
+    }
+
+    public static boolean isImage(File file)
+    {
+        boolean b = false;
+
+        try
+        {
+            b = (ImageIO.read(file) != null);
+        }
+        catch (IOException e)
+        {
+            System.out.println("Image cannot be found");
+        }
+
+        return b;
     }
 }

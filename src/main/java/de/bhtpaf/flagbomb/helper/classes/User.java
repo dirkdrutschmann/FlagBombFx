@@ -2,12 +2,9 @@ package de.bhtpaf.flagbomb.helper.classes;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import de.bhtpaf.flagbomb.helper.Util;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.Date;
 
 public class User
@@ -66,20 +63,13 @@ public class User
         return new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create().fromJson(json, User.class);
     }
 
-    public void encodeImage(File file){
-        String encodedFile = null;
-        if(file != null){
-            try {
-                FileInputStream fileInputStreamReader = new FileInputStream(file);
-                byte[] bytes = new byte[(int) file.length()];
-                fileInputStreamReader.read(bytes);
-                encodedFile = Base64.getEncoder().encodeToString(bytes);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void encodeImage(File file)
+    {
+        if (file == null)
+        {
+            return;
         }
-        userImageBase64 = encodedFile;
+
+        userImageBase64 = Util.getBase64StringOfImage(file);
     }
 }

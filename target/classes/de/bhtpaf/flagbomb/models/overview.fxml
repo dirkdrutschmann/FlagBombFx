@@ -14,6 +14,7 @@
             </center>
           </BorderPane>
           <Label fx:id="lb_user" layoutX="69.0" layoutY="20.0" prefHeight="17.0" prefWidth="87.0" text="Name Benutzer" />
+          <Button fx:id="bt_editUser" layoutX="762.0" layoutY="16.0" mnemonicParsing="false" onAction="#editUser" prefHeight="32.0" prefWidth="101.0" text="Mein Profil" />
           <Button fx:id="bt_logoff" layoutX="883.0" layoutY="16.0" mnemonicParsing="false" onAction="#logoutUser" prefHeight="32.0" prefWidth="101.0" text="Abmelden" />
 
       </AnchorPane>
