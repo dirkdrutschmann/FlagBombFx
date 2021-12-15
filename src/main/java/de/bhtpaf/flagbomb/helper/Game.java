@@ -279,7 +279,7 @@ public class Game implements GemGeneratedListener,
                         }
 
                         double factor = string.length() * fontSizeTop * 0.5;
-                        gc.fillText(string, _height / 2 - factor, _width / 2);
+                        gc.fillText(string, _grid.height / 2 - factor, _grid.width / 2);
 
                         if (backgroundPlayer.getStatus() == MediaPlayer.Status.PLAYING)
                         {
@@ -361,11 +361,11 @@ public class Game implements GemGeneratedListener,
             throw new Exception("Grid wurde nicht generiert");
         }
 
-        _mainStage.setMinHeight(_height + 39);
-        _mainStage.setMaxHeight(_height + 39);
+        _mainStage.setMinHeight(_grid.height + 39);
+        _mainStage.setMaxHeight(_grid.height + 39);
 
-        _mainStage.setMinWidth(_width + 16);
-        _mainStage.setMaxWidth(_width + 16);
+        _mainStage.setMinWidth(_grid.width + 16);
+        _mainStage.setMaxWidth(_grid.width + 16);
 
         _mainStage.setScene(_gameScene);
     }
