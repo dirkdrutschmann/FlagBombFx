@@ -76,11 +76,16 @@ public class UserController
     public void loadGameHistoryAsync()
     {
         new Thread(() -> {
+            String caption = "Wird geladen...";
+
+            String finalCaption1 = caption;
+            Platform.runLater(() -> { lv_gameHistory.getItems().add(0, finalCaption1); });
+
             List<GameHistoryEntry> gameHistoryEntries = _api.getGameHistory(_user);
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-            String caption = "";
 
+            Platform.runLater(() -> { lv_gameHistory.getItems().clear(); });
             for (int i = 0; i < gameHistoryEntries.size(); i++)
             {
                 caption = dateFormat.format(gameHistoryEntries.get(i).requestedOn) + ": Gegner \"" + gameHistoryEntries.get(i).opponent + "\"";
