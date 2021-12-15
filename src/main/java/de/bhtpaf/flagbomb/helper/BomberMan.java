@@ -141,8 +141,6 @@ public class BomberMan extends Item
     {
         this.square = getInitPosition();
 
-        capturedFlag = null;
-
         Media gameOverMusic = new Media(FlagBomb.class.getResource("sounds/gameover.wav").toString());
         MediaPlayer hitPlayer = new MediaPlayer(gameOverMusic);
         hitPlayer.play();

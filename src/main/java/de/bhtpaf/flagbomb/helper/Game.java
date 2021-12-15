@@ -41,6 +41,7 @@ public class Game implements GemGeneratedListener,
                              GameOverSetListener,
                              FlagCollectedListener,
                              FlagCapturedListener,
+                             FlagRespawnedListener,
                              PlayerWonListener
 {
     List<GameOverListener> _gameOverListeners = new ArrayList<>();
@@ -408,6 +409,21 @@ public class Game implements GemGeneratedListener,
             if (tile.tile().compare(middle))
             {
                 _myPlayer.respawn();
+
+                if (_myPlayer.capturedFlag != null)
+                {
+                    _myPlayer.capturedFlag.respawn();
+
+                    ExtendedItemJson f = new ExtendedItemJson();
+                    f.itemId = _myPlayer.capturedFlag.itemId;
+                    f.square = _myPlayer.capturedFlag.square;
+                    f.userId = _myPlayer.userId;
+
+                    _sendToWebSocket(f, "FlagRespawned");
+
+                    _myPlayer.capturedFlag = null;
+                }
+
                 return;
             }
         }
@@ -495,6 +511,23 @@ public class Game implements GemGeneratedListener,
         f.userId = userId;
 
         _sendToWebSocket(f, "FlagCaptured");
+    }
+
+    @Override
+    public void onFlagRespawned(ExtendedItemJson respawnedFlag)
+    {
+        for (BomberMan player : _players)
+        {
+            if (player.capturedFlag != null && player.capturedFlag.itemId.equals(respawnedFlag.itemId))
+            {
+                player.capturedFlag = null;
+            }
+
+            if (player.getOwnedFlag().itemId.equals(respawnedFlag.itemId))
+            {
+                player.getOwnedFlag().respawn();
+            }
+        }
     }
 
     @Override
@@ -779,4 +812,5 @@ public class Game implements GemGeneratedListener,
 
         _wsClient.sendMessage(new GsonBuilder().create().toJson(o, WebSocketCommunicationObject.class));
     }
+
 }

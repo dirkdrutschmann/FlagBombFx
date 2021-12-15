@@ -8,7 +8,6 @@ import de.bhtpaf.flagbomb.helper.classes.json.ExtendedItemJson;
 import de.bhtpaf.flagbomb.helper.classes.json.BombermanJson;
 import de.bhtpaf.flagbomb.helper.classes.json.ItemJson;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
-import de.bhtpaf.flagbomb.helper.classes.map.items.Bomb;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Flag;
 import de.bhtpaf.flagbomb.helper.classes.map.items.Gem;
 import de.bhtpaf.flagbomb.helper.interfaces.eventListener.*;
@@ -36,6 +35,7 @@ public class WebsocketClient {
     List<GameOverSetListener> _GameOverSetListeners = new ArrayList<>();
     List<FlagCollectedListener> _FlagCollectedListeners = new ArrayList<>();
     List<FlagCapturedListener> _FlagCapturedListeners = new ArrayList<>();
+    List<FlagRespawnedListener> _FlagRespawnedListeners = new ArrayList<>();
     List<PlayerWonListener> _PlayerWonListener = new ArrayList<>();
 
     private URI _endpoint;
@@ -212,6 +212,17 @@ public class WebsocketClient {
                 }
             }
 
+            // Flag respawned
+            else if (jObject.get("class").getAsString().equals("FlagRespawned"))
+            {
+                ExtendedItemJson flagJson = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), ExtendedItemJson.class);
+
+                for (FlagRespawnedListener listener : _FlagRespawnedListeners)
+                {
+                    listener.onFlagRespawned(flagJson);
+                }
+            }
+
             else if (jObject.get("class").getAsString().equals("PlayerWon"))
             {
                 BombermanJson player = new GsonBuilder().create().fromJson(jObject.get("objectValue").getAsJsonObject(), BombermanJson.class);
@@ -305,6 +316,11 @@ public class WebsocketClient {
     public void addFlagCapturedListener(FlagCapturedListener listener)
     {
         _FlagCapturedListeners.add(listener);
+    }
+
+    public void addFlagRespawnedListener(FlagRespawnedListener listener)
+    {
+        _FlagRespawnedListeners.add(listener);
     }
 
     public void addPlayerWonListener(PlayerWonListener listener)
