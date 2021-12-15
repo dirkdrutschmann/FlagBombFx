@@ -163,6 +163,7 @@ public class Game implements GemGeneratedListener,
                 _wsClient.addGameOverSetListener(this::onGameOverSet);
                 _wsClient.addFlagCollectedListener(this::onFlagCollected);
                 _wsClient.addFlagCapturedListener(this::onFlagCaptured);
+                _wsClient.addFlagRespawnedListener(this::onFlagRespawned);
                 _wsClient.addPlayerWonListener(this::onPlayerWon);
             }
 
