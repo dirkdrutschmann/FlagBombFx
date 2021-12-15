@@ -33,7 +33,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class OverviewController implements MapGeneratedListener, GameOverListener, BomberManGeneratedListener, UserChangedListener
+public class OverviewController implements MapGeneratedListener, GameOverListener, BomberManGeneratedListener, UserChangedListener, FormClosedListener
 {
     private boolean _StopAllThreads = false;
     private boolean _StopWaitingForPartnerThread = false;
@@ -160,6 +160,10 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
             controller.setApi(_api);
             controller.setUser(_user);
             controller.addUserChangedListener(this::onUserChanged);
+            controller.addFormClosedListener(this::onFormClosed);
+            controller.loadGameHistoryAsync();
+
+            _stopAllTimers();
 
             _mainStage.setScene(scene);
         }
@@ -175,6 +179,12 @@ public class OverviewController implements MapGeneratedListener, GameOverListene
     {
         _user = user;
         initUser();
+    }
+
+    @Override
+    public void onFormClosed()
+    {
+        _startAllTimers();
     }
 
     public void startGame(ActionEvent event)

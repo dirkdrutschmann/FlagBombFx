@@ -4,14 +4,19 @@ import de.bhtpaf.flagbomb.FlagBomb;
 import de.bhtpaf.flagbomb.helper.Util;
 import de.bhtpaf.flagbomb.helper.classes.JWT;
 import de.bhtpaf.flagbomb.helper.classes.User;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.FormClosedListener;
+import de.bhtpaf.flagbomb.helper.interfaces.eventListener.PlayerWonListener;
 import de.bhtpaf.flagbomb.helper.interfaces.eventListener.UserChangedListener;
+import de.bhtpaf.flagbomb.helper.responses.GameHistoryEntry;
 import de.bhtpaf.flagbomb.helper.responses.StdResponse;
 import de.bhtpaf.flagbomb.services.Api;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -22,6 +27,8 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +42,7 @@ public class UserController
     private boolean _imageSet = false;
 
     private List<UserChangedListener> _userChangedListeners = new ArrayList<>();
+    private List<FormClosedListener> _formClosedListeners = new ArrayList<>();
 
     private final String RED_BORDER_STYLE = "-fx-text-box-border: red;";
 
@@ -62,10 +70,37 @@ public class UserController
     @FXML
     public ImageView img_user;
 
+    @FXML
+    public ListView lv_gameHistory;
+
+    public void loadGameHistoryAsync()
+    {
+        new Thread(() -> {
+            List<GameHistoryEntry> gameHistoryEntries = _api.getGameHistory(_user);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+            String caption = "";
+
+            for (int i = 0; i < gameHistoryEntries.size(); i++)
+            {
+                caption = dateFormat.format(gameHistoryEntries.get(i).requestedOn) + ": Gegner \"" + gameHistoryEntries.get(i).opponent + "\"";
+
+                int finalI = i;
+                String finalCaption = caption;
+                Platform.runLater(() -> { lv_gameHistory.getItems().add(finalI, finalCaption); });
+            }
+        }).start();
+    }
+
     public void backToOverview(ActionEvent event)
     {
         event.consume();
         _mainStage.setScene(_previousScene);
+
+        for (FormClosedListener listener : _formClosedListeners)
+        {
+            listener.onFormClosed();
+        }
     }
 
     public void saveUser(ActionEvent event) throws IOException
@@ -127,8 +162,6 @@ public class UserController
 
         backToOverview(event);
     }
-
-
 
     public void setApi(Api api)
     {
@@ -214,6 +247,11 @@ public class UserController
     public void addUserChangedListener(UserChangedListener listener)
     {
         _userChangedListeners.add(listener);
+    }
+
+    public void addFormClosedListener(FormClosedListener listener)
+    {
+        _formClosedListeners.add(listener);
     }
 
 }

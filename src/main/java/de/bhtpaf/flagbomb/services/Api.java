@@ -5,6 +5,7 @@ import de.bhtpaf.flagbomb.helper.classes.JWT;
 import de.bhtpaf.flagbomb.helper.classes.User;
 import de.bhtpaf.flagbomb.helper.classes.map.Grid;
 import de.bhtpaf.flagbomb.helper.requests.HttpGetWithEntity;
+import de.bhtpaf.flagbomb.helper.responses.GameHistoryEntry;
 import de.bhtpaf.flagbomb.helper.responses.PlayingPair;
 import de.bhtpaf.flagbomb.helper.responses.StdResponse;
 import org.apache.http.HttpEntity;
@@ -318,6 +319,47 @@ public class Api {
     {
         String path = _apiUrl + "/User/PlayRequest/Outgoing";
         return _getPlayRequest(path, user);
+    }
+
+    public List<GameHistoryEntry> getGameHistory(User user)
+    {
+        String path = _apiUrl + "/Game/GameHistory/" + Integer.toString(user.id);
+        List<GameHistoryEntry> gameHistoryEntries = new ArrayList<>();
+
+        HttpGet request = new HttpGet(path);
+        request.setHeader(HttpHeaders.AUTHORIZATION, "bearer " + user.jwtToken.token);
+
+        try
+        {
+            CloseableHttpResponse response = _client.execute(request);
+            System.out.println(path + ": " + response.getStatusLine());
+
+            String resp = _getStringFromInputStream(response.getEntity().getContent());
+
+            if (response.getStatusLine().getStatusCode() != 200)
+            {
+                if (resp != null)
+                {
+                    throw new Exception(StdResponse.fromJson(resp).message);
+                }
+            }
+            else
+            {
+                JsonArray history = JsonParser.parseString(resp).getAsJsonArray();
+
+                for (JsonElement e : history)
+                {
+                    gameHistoryEntries.add(GameHistoryEntry.createFromJson(e.toString()));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+
+
+        return gameHistoryEntries;
     }
 
     public boolean isPlayingPartnerConnected(User user, PlayingPair pair)

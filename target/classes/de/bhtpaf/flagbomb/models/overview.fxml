@@ -47,7 +47,7 @@
                       <Pane>
                           <ImageView fx:id="img_waiting_logo" fitHeight="155.0" fitWidth="153.5" layoutX="98.25" layoutY="20.0" pickOnBounds="true" preserveRatio="true" />
                           <Label fx:id="lb_waiting_text" layoutX="70.0" layoutY="190.0" text="Warten auf anderen Spieler..." />
-                          <Button fx:id="bt_waiting_cancel" layoutX="240.0" layoutY="185.0" prefHeight="28.0" prefWidth="90.0" onAction="#stopWaiting" text="Abbrechen"/>
+                          <Button fx:id="bt_waiting_cancel" layoutX="240.0" layoutY="185.0" onAction="#stopWaiting" prefHeight="28.0" prefWidth="90.0" text="Abbrechen" />
                       </Pane>
                   </StackPane>
               </AnchorPane>
